@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
-import { CharacterSelectEvents } from '../../shared/characterSelectEvents';
-import { CharacterSelectConfig } from '../../shared/config';
-import { useEvents } from '../../../../../webview/composables/useEvents';
-import { useTranslate } from '@Shared/translate';
+import { CharacterSelectEvents } from '../../shared/characterSelectEvents.js';
+import { CharacterSelectConfig } from '../../shared/config.js';
+import { useEvents } from '../../../../../webview/composables/useEvents.js';
+import { useTranslate } from '@Shared/translate.js';
 
 // Import translations
 const { t } = useTranslate('en');

@@ -49,7 +49,7 @@
 </template>
 
 <script lang="ts" setup>
-import { NotificationConfig } from '../../shared/config';
+import { NotificationConfig } from '../../shared/config.js';
 
 const { notificationProp } = defineProps({
     notificationProp: Object,

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useTranslate } from '@Shared/translate';
+import { useTranslate } from '@Shared/translate.js';
 
 // Import translations
 const { t } = useTranslate('en');

@@ -1,7 +1,7 @@
 {
     "author": "stuyk",
     "type": "module",
-    "version": "48",
+    "version": "49",
     "scripts": {
         "dev": "nodemon -x pnpm start",
         "dev:linux": "nodemon -x pnpm start:linux",
@@ -40,10 +40,11 @@
         "dotenv": "^16.4.5",
         "hono": "^4.5.0",
         "mongodb": "^6.8.0",
+        "openmeteo": "^1.1.4",
         "sjcl": "^1.0.8",
         "typescript": "^5.5.3",
         "vite": "^5.3.4",
-        "vue": "^3.4.32",
+        "vue": "^3.4.33",
         "vue-tsc": "^2.0.26"
     },
     "prettier": {

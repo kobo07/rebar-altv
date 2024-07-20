@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import { useMessenger } from '../../../../webview/composables/useMessenger';
-import { ChatConfig } from '../shared/config';
+import { useMessenger } from '../../../../webview/composables/useMessenger.js';
+import { ChatConfig } from '../shared/config.js';
 import ChatMessage from './components/ChatMessage.vue';
-import { useEvents } from '../../../../webview/composables/useEvents';
-import { ChatEvents } from '../shared/events';
+import { useEvents } from '../../../../webview/composables/useEvents.js';
+import { ChatEvents } from '../shared/events.js';
 
 type CommandInfo = { name: string; desc: string };
 

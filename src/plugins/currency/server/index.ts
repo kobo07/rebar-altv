@@ -68,6 +68,7 @@ function useCurrency<K extends keyof CurrencyDefinitions>(playerOrDatabaseId: al
         }
 
         return true;
+
     }
 
     /**

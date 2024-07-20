@@ -12,9 +12,9 @@
 import { ref, computed, onMounted } from 'vue';
 import { Notification } from '../shared/interface.js';
 import { NotifyEvents } from '../shared/events.js';
-import { useEvents } from '../../../../webview/composables/useEvents';
+import { useEvents } from '../../../../webview/composables/useEvents.js';
 import NotificationComponent from './components/NotificationComponent.vue';
-import { useAudio } from '../../../../webview/composables/useAudio';
+import { useAudio } from '../../../../webview/composables/useAudio.js';
 
 const audio = useAudio();
 const events = useEvents();

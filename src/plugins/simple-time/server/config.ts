@@ -1,13 +1,13 @@
 export const TimeConfig = {
-    // If set to true, it will override all other settings
-    // This will use current server time as the main game time
-    useServerTime: false,
-    // If above is false, minutes-per-minute is how many minutes in-game pass per minute.
-    // So if you have 2 minutes-per-minute, then every minute the in-game time goes up by 2 minutes
-    // So you will effectively get 2 night cycles per 24 hours
-    // Where as setting it to 6 you will get 6 night cycles per 24 hours
+    // 如果设置为true，它将覆盖所有其他设置
+    // 这将使用当前服务器时间作为主要游戏时间
+    useServerTime: true,
+    // 如果上面的设置为false，minutesPerMinute 表示每分钟游戏内经过的分钟数。
+    // 例如，如果设置为2 minutesPerMinute，则每分钟游戏内时间增加2分钟
+    // 这样你将在24小时内经历2个夜晚周期
+    // 而如果设置为6，则在24小时内经历6个夜晚周期
     minutesPerMinute: 5,
-    // Starting time if not using server time
+    // 如果不使用服务器时间，起始时间
     startHour: 9,
     startMinute: 0,
 };

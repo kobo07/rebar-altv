@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
-import { Message } from '@Shared/types/message';
-import { formatTimestamp } from '@Shared/utility/time';
-import { ChatConfig } from '../../shared/config';
+import { Message } from '@Shared/types/message.js';
+import { formatTimestamp } from '@Shared/utility/time.js';
+import { ChatConfig } from '../../shared/config.js';
 
 const props = defineProps<{ message: Message; timestamp?: boolean }>();
 

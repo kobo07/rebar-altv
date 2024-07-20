@@ -1,17 +1,17 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 
-import { Appearance } from '@Shared/types';
-import { HairColors } from '@Shared/data/hairColors';
+import { Appearance } from '@Shared/types/appearance.js';
+import { HairColors } from '@Shared/data/hairColors.js';
 
-import { CustomSection } from '../../composable/useUpdater';
+import { CustomSection } from '../../composable/useUpdater.js';
 
 import LeftIcon from '../icons/LeftIcon.vue';
 import RightIcon from '../icons/RightIcon.vue';
 
 import InputBox from './InputBox.vue';
 import UiIconButton from '../ui/UiIconButton.vue';
-import { MakeupColors } from '../../../../../main/shared/data/makeupColors';
+import { MakeupColors } from '../../../../../main/shared/data/makeupColors.js';
 
 const model = defineModel<Partial<Appearance>>();
 const props = defineProps<{ section: CustomSection; index?: number }>();

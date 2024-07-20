@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
-import { useEvents } from '../../../../../webview/composables/useEvents';
-import { AuthEvents } from '../../shared/authEvents';
-import { useTranslate } from '@Shared/translate';
+import { useEvents } from '../../../../../webview/composables/useEvents.js';
+import { AuthEvents } from '../../shared/authEvents.js';
+import { useTranslate } from '@Shared/translate.js';
 
 const { t } = useTranslate('en');
 

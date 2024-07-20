@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 
-import { Character } from '@Shared/types';
-import { useTranslate } from '@Shared/translate';
+import { Character } from '@Shared/types/character.js';
+import { useTranslate } from '@Shared/translate.js';
 
-import { CharacterSelectEvents } from '../shared/characterSelectEvents';
+import { CharacterSelectEvents } from '../shared/characterSelectEvents.js';
 
 import '../translate/index';
 
-import { useEvents } from '../../../../webview/composables/useEvents';
+import { useEvents } from '../../../../webview/composables/useEvents.js';
 
 import Confirmation from './components/Confirmation.vue';
 import CharacterSelectUsername from './components/CharacterSelectUsername.vue';
