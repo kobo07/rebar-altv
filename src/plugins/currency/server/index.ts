@@ -72,8 +72,8 @@ function useCurrency<K extends keyof CurrencyDefinitions>(playerOrDatabaseId: al
     }
 
     /**
-     * Subtracts a given currency type from an amount
-     * Returns `false` if minimum amount is unavailable
+     * 
+     * 从金额中减去给定的货币类型，如果最小金额不可用则返回false
      *
      * @param {CurrencyType} type
      * @param {number} amount
@@ -171,3 +171,5 @@ declare global {
 }
 
 Rebar.useApi().register(API_NAME, useApi());
+
+
