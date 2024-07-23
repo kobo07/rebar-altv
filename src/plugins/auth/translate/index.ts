@@ -19,7 +19,10 @@ setBulk({
         'auth.span.verificationCode': '邮箱验证码',
         'auth.span.recover': '恢复账号',
         'auth.span.recover_error': '发生错误，请重试',
-        'auth.span.forgot.password': '忘记密码？'
+        'auth.span.forgot.password': '忘记密码？',
+        'auth.span.newPassword': '新密码',
+        'auth.span.confirmPassword': '确认密码',
+
     },
     hu: {
         'auth.span.login': 'Bejelentkezés',

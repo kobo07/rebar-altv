@@ -1,3 +1,7 @@
 import { useWebview } from '@Client/webview/index.js';
-import './src/api.js';
-useWebview().show('Notify', 'persistent');
+import * as alt from 'alt-client';
+
+
+
+// Show a page
+useWebview().show('hud', 'overlay');
