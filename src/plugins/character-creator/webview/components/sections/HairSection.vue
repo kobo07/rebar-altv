@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { computed, reactive, ref } from 'vue';
 
-import { Appearance } from '@Shared/types';
+import { Appearance } from '@Shared/types/appearance.js';
 
-import { useAppearance } from '../../composable/useAppearance';
-import { CustomSection, useUpdater } from '../../composable/useUpdater';
+import { useAppearance } from '../../composable/useAppearance.js';
+import { CustomSection, useUpdater } from '../../composable/useUpdater.js';
 
 import HairIcon from '../icons/HairIcon.vue';
 import EyebrowIcon from '../icons/EyebrowIcon.vue';
@@ -12,7 +12,7 @@ import FacialHairIcon from '../icons/FacialHairIcon.vue';
 
 import UiIconButton from '../ui/UiIconButton.vue';
 import SectionBuilder from './SectionBuilder.vue';
-import { useTranslate } from '@Shared/translate';
+import { useTranslate } from '@Shared/translate.js';
 
 const { t } = useTranslate('en');
 

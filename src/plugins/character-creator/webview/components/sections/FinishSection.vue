@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { ref, toRaw } from 'vue';
-import { useEvents } from '../../../../../../webview/composables/useEvents';
-import { CharacterCreatorEvents } from '../../../shared/characterCreatorEvents';
-import { useAppearance } from '../../composable/useAppearance';
+import { useEvents } from '../../../../../../webview/composables/useEvents.js';
+import { CharacterCreatorEvents } from '../../../shared/characterCreatorEvents.js';
+import { useAppearance } from '../../composable/useAppearance.js';
 import UiButton from '../ui/UiButton.vue';
-import { useTranslate } from '@Shared/translate';
+import { useTranslate } from '@Shared/translate.js';
 
 const { t } = useTranslate('en');
 

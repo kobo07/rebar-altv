@@ -30,3 +30,20 @@ async function getCommands(player: alt.Player) {
 
 alt.onClient(ChatEvents.toWebview.commands, getCommands);
 messenger.message.on(handlePlayerMessage);
+
+
+
+
+const Messenger = Rebar.messenger.useMessenger();
+
+Messenger.commands.register({
+    name: 'adminonlycommand',
+    desc: '- Only admins can run this',
+    options: { accountPermissions: ['admin'] },
+    callback: async (player) => {
+        const rPlayer = Rebar.usePlayer(player);
+        rPlayer.notify.showNotification('Hello Admin!');
+    },
+});
+
+

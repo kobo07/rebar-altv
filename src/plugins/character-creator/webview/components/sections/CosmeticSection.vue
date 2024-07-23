@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import { reactive, computed, ref } from 'vue';
 
-import { Appearance } from '@Shared/types';
+import { Appearance } from '@Shared/types/appearance.js';
 
-import { CustomSection, useUpdater } from '../../composable/useUpdater';
-import { useAppearance } from '../../composable/useAppearance';
-import { useTranslate } from '@Shared/translate';
+import { CustomSection, useUpdater } from '../../composable/useUpdater.js';
+import { useAppearance } from '../../composable/useAppearance.js';
+import { useTranslate } from '@Shared/translate.js';
 
 import SectionBuilder from './SectionBuilder.vue';
 import UiButton from '../ui/UiButton.vue';

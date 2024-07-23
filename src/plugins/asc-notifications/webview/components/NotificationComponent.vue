@@ -9,7 +9,7 @@
                 </span>
             </div>
             <span class="text-white" v-if="secondsAgo >= 10">{{ secondsAgo }}s</span>
-            <span class="text-white" v-else>now</span>
+            <span class="text-white" v-else>现在</span>
         </div>
         <div class="mt-2">
             <div
@@ -33,7 +33,7 @@
                 </span>
             </div>
             <span class="text-gray-500" v-if="secondsAgo >= 2">{{ secondsAgo }}s</span>
-            <span class="text-gray-500" v-else>now</span>
+            <span class="text-gray-500" v-else>现在</span>
         </div>
         <div class="mt-2">
             <div

@@ -172,7 +172,7 @@ watch(input, onInputChange);
             />
             <template v-if="closestMatchingCommands.length >= 1 && focused">
                 <span class="select-none rounded-md bg-neutral-950 bg-opacity-60 px-2 py-2 font-medium text-white">
-                    Suggestions
+                    建议
                 </span>
                 <span
                     v-for="(command, index) in closestMatchingCommands"

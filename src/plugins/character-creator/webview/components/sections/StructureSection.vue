@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import { reactive } from 'vue';
 
-import { Appearance } from '@Shared/types';
+import { Appearance } from '@Shared/types/appearance.js';
 
-import { useAppearance } from '../../composable/useAppearance';
-import { CustomSection, useUpdater } from '../../composable/useUpdater';
+import { useAppearance } from '../../composable/useAppearance.js';
+import { CustomSection, useUpdater } from '../../composable/useUpdater.js';
 
 import SectionBuilder from './SectionBuilder.vue';
-import { useTranslate } from '@Shared/translate';
+import { useTranslate } from '@Shared/translate.js';
 
 const { t } = useTranslate('en');
 const { appearance } = useAppearance();

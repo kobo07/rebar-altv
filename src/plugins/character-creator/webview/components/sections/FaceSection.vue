@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { reactive, computed } from 'vue';
 
-import { Appearance } from '@Shared/types';
+import { Appearance } from '@Shared/types/appearance.js';
 
-import { useUpdater } from '../../composable/useUpdater';
-import { useAppearance } from '../../composable/useAppearance';
+import { useUpdater } from '../../composable/useUpdater.js';
+import { useAppearance } from '../../composable/useAppearance.js';
 
 import FeminineIcon from '../icons/FeminineIcon.vue';
 import MasculineIcon from '../icons/MasculineIcon.vue';
@@ -12,7 +12,7 @@ import MasculineIcon from '../icons/MasculineIcon.vue';
 import UiButton from '../ui/UiButton.vue';
 import SectionBuilder from './SectionBuilder.vue';
 
-import { useTranslate } from '@Shared/translate';
+import { useTranslate } from '@Shared/translate.js';
 
 type CustomSection = { name: string; property: keyof Appearance; min: number; max: number; increment: number };
 

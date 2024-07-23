@@ -14,7 +14,12 @@ setBulk({
         'auth.span.new.user': '新用户？',
         'auth.span.existing.user': '现有用户？',
         'auth.kick.sessionKey': '不允许进行身份验证',
-        'auth.kick.alreadyLoggedIn': '已经登录'
+        'auth.kick.alreadyLoggedIn': '已经登录',
+        'auth.span.getVerificationCode': '获取邮箱验证码',
+        'auth.span.verificationCode': '邮箱验证码',
+        'auth.span.recover': '恢复账号',
+        'auth.span.recover_error': '发生错误，请重试',
+        'auth.span.forgot.password': '忘记密码？'
     },
     hu: {
         'auth.span.login': 'Bejelentkezés',
