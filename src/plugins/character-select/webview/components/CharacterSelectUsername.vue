@@ -26,33 +26,33 @@ function validate() {
     lastError.value = undefined;
 
     if (first.value.length < CharacterSelectConfig.minLength) {
-        firstError.value = `${CharacterSelectConfig.minLength} is minimum length`;
+        firstError.value = `名字太短`;
         return;
     }
 
     if (first.value.length > CharacterSelectConfig.maxLength) {
-        firstError.value = `${CharacterSelectConfig.maxLength} exceeds maximum length`;
+        firstError.value = `名字太长`;
         return;
     }
 
     if (!/[\p{Letter}\p{Mark}]+/gu.test(first.value)) {
-        firstError.value = `Invalid characters found`;
+        firstError.value = `包含无效字符`;
         return;
     }
 
     if (CharacterSelectConfig.askForLastName) {
         if (last.value.length < CharacterSelectConfig.minLength) {
-            lastError.value = `${CharacterSelectConfig.minLength} is minimum length`;
+            lastError.value = `姓氏太短`;
             return;
         }
 
         if (last.value.length > CharacterSelectConfig.maxLength) {
-            lastError.value = `${CharacterSelectConfig.maxLength} exceeds maximum length`;
+            lastError.value = `姓氏太长`;
             return;
         }
 
         if (!/[\p{Letter}\p{Mark}]+/gu.test(last.value)) {
-            lastError.value = `Invalid characters found`;
+            lastError.value = `包含无效字符`;
             return;
         }
     }

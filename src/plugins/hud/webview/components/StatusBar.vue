@@ -3,36 +3,24 @@
     <i :class="`fas ${icon}`"></i>
     <span class="label">{{ label }}</span>
     <div class="bar">
-      <div class="fill" :style="{ width: value + '%', background: `linear-gradient(to right, ${color} 0%, transparent 100%)` }"></div>
+      <div class="fill" :style="{ width: value + '%', background: color }"></div>
     </div>
     <span class="value">{{ value }}%</span>
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    label: {
-      type: String,
-      required: true,
-    },
-    value: {
-      type: Number,
-      required: true,
-    },
-    color: {
-      type: String,
-      required: true,
-    },
-    icon: {
-      type: String,
-      required: true,
-    },
-  },
-};
+<script lang="ts" setup>
+import { defineProps } from 'vue';
+
+const props = defineProps<{
+  label: string;
+  value: number;
+  color: string;
+  icon: string;
+}>();
 </script>
 
-<style>
+<style scoped>
 .status-bar {
   display: flex;
   align-items: center;

@@ -1,75 +1,119 @@
 <template>
-  <div class="hud">
-    <div class="top-bar">
-      <div class="info">
-        <span><i class="fas fa-id-badge"></i> ID: {{ player.id }}</span>
-        <span><i class="fas fa-briefcase"></i> 职业: {{ player.job }}</span>
-        <span><i class="fas fa-clock"></i> 状态: {{ player.status }}</span>
-        <span><i class="fas fa-clock"></i> 时间: {{ time }}</span>
-        <span><i class="fas fa-heart"></i> 健康: {{ player.healthStatus }}</span>
+  <div>
+    <div class="hud">
+      <div class="top-bar">
+        <div class="info">
+          <span><i class="fas fa-id-badge"></i> ID: {{ player.id }}</span>
+          <span><i class="fas fa-briefcase"></i> 职业: {{ player.job }}</span>
+          <span><i class="fas fa-clock"></i> 状态: {{ player.status }}</span>
+          <span><i class="fas fa-clock"></i> 时间: {{ time }}</span>
+          <span><i class="fas fa-heart"></i> 健康: {{ player.healthStatus }}</span>
+        </div>
+      </div>
+      <div class="status-bars">
+        <StatusBar label="血量" :value="player.health" color="linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,154,0,1) 100%)" icon="fa-heart" />
+        <StatusBar label="耐力" :value="player.stamina" color="linear-gradient(90deg, rgba(0,255,0,1) 0%, rgba(0,128,0,1) 100%)" icon="fa-running" />
+        <StatusBar label="饱食度" :value="player.hunger" color="linear-gradient(90deg, rgba(255,165,0,1) 0%, rgba(255,69,0,1) 100%)" icon="fa-utensils" />
+        <StatusBar label="饥渴度" :value="player.thirst" color="linear-gradient(90deg, rgba(0,0,255,1) 0%, rgba(0,191,255,1) 100%)" icon="fa-tint" />
+        <StatusBar label="护甲值" :value="player.armor" color="linear-gradient(90deg, rgba(169,169,169,1) 0%, rgba(128,128,128,1) 100%)" icon="fa-shield-alt" />
       </div>
     </div>
-    <div class="status-bars">
-      <StatusBar label="血量" :value="player.health" color="rgba(255, 0, 0, 1)" icon="fa-heart" />
-      <StatusBar label="耐力" :value="player.stamina" color="rgba(0, 255, 0, 1)" icon="fa-running" />
-      <StatusBar label="饱食度" :value="player.hunger" color="rgba(255, 165, 0, 1)" icon="fa-utensils" />
-      <StatusBar label="饥渴度" :value="player.thirst" color="rgba(0, 0, 255, 1)" icon="fa-tint" />
-      <StatusBar label="肺活量" :value="player.lungCapacity" color="rgba(0, 255, 255, 1)" icon="fa-lungs" />
-      <StatusBar label="护甲值" :value="player.armor" color="rgba(169, 169, 169, 1)" icon="fa-shield-alt" />
-    </div>
+    <VehicleHUD v-if="!inVehicle" :vehicle="vehicle" class="vehicle-hud" />
   </div>
 </template>
 
-<script>
-import { ref, onMounted } from 'vue';
+<script lang="ts" setup>
+import { ref, onMounted,watch } from 'vue';
 import StatusBar from './components/StatusBar.vue';
 import VehicleHUD from './components/VehicleHUD.vue';
+import { usePlayerStats } from '@Composables/usePlayerStats.js';
 
-export default {
-  components: {
-    StatusBar,
-    VehicleHUD,
-  },
-  setup() {
-    const player = ref({
-      id: '12345',
-      job: '警察',
-      status: '上班',
-      healthStatus: '健康',
-      health: 80,
-      stamina: 70,
-      hunger: 60,
-      thirst: 50,
-      lungCapacity: 40,
-      armor: 30,
-    });
+const {
+  armour,
+  engineOn,
+  fps,
+  gear,
+  headlights,
+  health,
+  highbeams,
+  indicatorLights,
+  inVehicle,
+  inWater,
+  isAiming,
+  isFlying,
+  isTalking,
+  locked,
+  maxGear,
+  ping,
+  speed,
+  stamina,
+  street,
+  vehicleHealth,
+  weapon,
+  weather,
+  zone,
+  hunger,
+  thirst,
+  
+} = usePlayerStats();
 
-    const vehicle = ref({
-      gear: 'D',
-      speed: 60,
-      headlights: true,
-      engineOn: true,
-      locked: false,
-    });
+const player = ref({
+  id: '12345',
+  job: '警察',
+  status: '上班',
+  healthStatus: '健康',
+  health: 80,
+  stamina: 70,
+  hunger: 60,
+  thirst: 50,
+  armor: 30,
+  isdead:false,
+  isTalking: false,
+});
 
-    const time = ref(new Date().toLocaleTimeString());
+const vehicle = ref({
+  gear: 0,
+  speed: 60,
+  headlights: true,
+  engineOn: true,
+  locked: false,
+});
 
-    onMounted(() => {
-      setInterval(() => {
-        time.value = new Date().toLocaleTimeString();
-      }, 1000);
-    });
+const time = ref(new Date().toLocaleTimeString());
 
-    return {
-      player,
-      vehicle,
-      time,
-    };
-  },
-};
+onMounted(() => {
+  setInterval(() => {
+    time.value = new Date().toLocaleTimeString();
+  }, 1000);
+
+  player.value.health = health.value;
+  player.value.stamina = stamina.value;
+  player.value.hunger = hunger.value;
+  player.value.thirst = thirst.value;
+  player.value.armor = armour.value;
+  player.value.isTalking = isTalking.value;
+
+  vehicle.value.gear = gear.value;
+  vehicle.value.speed = speed.value;
+  vehicle.value.headlights = headlights.value
+  vehicle.value.engineOn = engineOn.value;
+  vehicle.value.locked = locked.value;
+
+  
+});
+
+
+
+watch(health, (newVal) => {
+  player.value.health = newVal;
+
+});
+
+
+
 </script>
 
-<style>
+<style scoped>
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 
 .hud {
@@ -124,6 +168,7 @@ export default {
   box-shadow: 0 0 1vw rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 @media (max-width: 768px) {

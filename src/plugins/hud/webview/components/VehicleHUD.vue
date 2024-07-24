@@ -20,18 +20,21 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    vehicle: {
-      type: Object,
-      required: true,
-    },
-  },
-};
+<script lang="ts" setup>
+import { defineProps } from 'vue';
+
+const props = defineProps<{
+  vehicle: {
+    speed: number;
+    gear: number;
+    headlights: boolean;
+    engineOn: boolean;
+    locked: boolean;
+  };
+}>();
 </script>
 
-<style>
+<style scoped>
 .vehicle-hud {
   position: absolute;
   bottom: 1%;
