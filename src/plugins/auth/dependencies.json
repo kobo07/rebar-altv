@@ -1,0 +1,9 @@
+{
+    "dependencies": {
+      "nodemailer": "latest"
+    },
+    "devDependencies": {
+      "@types/nodemailer": "latest"
+    }
+  }
+  
