@@ -1,11 +1,11 @@
 <template>
   <div class="status-bar">
     <i :class="`fas ${icon}`"></i>
-    <span class="label">{{ label }}</span>
+   <!--  <span class="label">{{ label }}</span>  -->
     <div class="bar">
       <div class="fill" :style="{ width: value + '%', background: color }"></div>
     </div>
-    <span class="value">{{ value }}%</span>
+   <!--  <span  class="value">{{ value }}%</span> -->
   </div>
 </template>
 

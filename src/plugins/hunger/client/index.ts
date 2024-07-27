@@ -6,22 +6,22 @@ import native from 'natives'
 const Rebar = useRebarClient();
 const webview = Rebar.webview.useWebview();
 
-const HUNGER_INTERVAL = 1000 * 60 * 10; // 10分钟
+const HUNGER_INTERVAL = 1000 * 60 // 10分钟
 const FOOD_DECREMENT = 7;
 const WATER_DECREMENT = 7;
 const SHIT_INCREMENT = 3.5;
 
 
 
-alt.onceServer('hunger:start', (player: alt.Player) => {
-        starthungerinterval(player);
+alt.onceServer('hunger:start', () => {
+    starthungerinterval();
 });
 
-function starthungerinterval(player: alt.Player) {
-    alt.setInterval(() => {
-        let food = player.getStreamSyncedMeta('food') as number;
-        let water = player.getStreamSyncedMeta('water') as number;
-        let shit = player.getStreamSyncedMeta('shit') as number;
+function starthungerinterval() {
+    alt.setInterval(async () => {
+        let food = alt.Player.local.getStreamSyncedMeta('food') as number;
+        let water = alt.Player.local.getStreamSyncedMeta('water') as number;
+        let shit = alt.Player.local.getStreamSyncedMeta('shit') as number;
 
         if (food > FOOD_DECREMENT) {
             food -= FOOD_DECREMENT;
@@ -43,7 +43,8 @@ function starthungerinterval(player: alt.Player) {
             alt.emitServer('hunger:shit');
         }
         alt.emitServer( 'hunger:update', food, water, shit);
-
         
     }, HUNGER_INTERVAL);
 }
+
+

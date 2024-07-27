@@ -17,9 +17,11 @@
       <div class="status-bars">
         <StatusBar label="血量" :value="Math.floor(health-100)" color="linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,154,0,1) 100%)" icon="fa-heart" />
         <StatusBar label="耐力" :value="Math.floor(stamina)" color="linear-gradient(90deg, rgba(0,255,0,1) 0%, rgba(0,128,0,1) 100%)" icon="fa-running" />
-        <StatusBar label="饱食度" :value="player.hunger" color="linear-gradient(90deg, rgba(255,165,0,1) 0%, rgba(255,69,0,1) 100%)" icon="fa-utensils" />
-        <StatusBar label="饥渴度" :value="player.thirst" color="linear-gradient(90deg, rgba(0,0,255,1) 0%, rgba(0,191,255,1) 100%)" icon="fa-tint" />
-        <StatusBar label="护甲值" :value="player.armor" color="linear-gradient(90deg, rgba(169,169,169,1) 0%, rgba(128,128,128,1) 100%)" icon="fa-shield-alt" />
+        <StatusBar v-show="armour !== 0" label="护甲" :value="armour" color="linear-gradient(90deg, rgba(169,169,169,1) 0%, rgba(128,128,128,1) 100%)" icon="fa-shield-alt" />
+        <StatusBar label="食物" :value="food" color="linear-gradient(90deg, rgba(255,165,0,1) 0%, rgba(255,69,0,1) 100%)" icon="fa-utensils" />
+        <StatusBar label="饮水" :value="water" color="linear-gradient(90deg, rgba(0,0,255,1) 0%, rgba(0,191,255,1) 100%)" icon="fa-tint" />
+        <StatusBar label="便意" :value="shit" color="linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,154,0,1) 100%)" icon="fa-poo" />
+       
       </div>
     </div>
     <VehicleHUD v-if="!inVehicle" :vehicle="vehicle" class="vehicle-hud" />
@@ -33,6 +35,7 @@ import VehicleHUD from './components/VehicleHUD.vue';
 import { usePlayerStats } from '@Composables/usePlayerStats.js';
 import { useSyncedMeta } from '../../../../webview/composables/useSyncedMeta.js';
 import { useEvents } from '@Composables/useEvents.js';
+import { usePlayerStatsEx } from './stats.js';
 
 const syncedMeta = useSyncedMeta();
 const character = syncedMeta.getCharacter();
@@ -66,6 +69,12 @@ const {
   zone,
 } = usePlayerStats();
 
+const {
+  food,
+  shit,
+  water,
+} = usePlayerStatsEx();
+
 const player = ref({
   id: '12345',
   job: '警察',
@@ -97,15 +106,6 @@ onMounted(() => {
   setInterval(() => {
     time.value = new Date().toLocaleTimeString();
   }, 1000);
-
-  player.value.health = ((health.value - 100) / 100) * 100;
-  player.value.stamina = stamina.value
-  player.value.armor = (armour.value/200)*100;
-  player.value.isTalking = isTalking.value;
-  player.value.position = street.value;
-
-  player.value.hunger = character.value.food;
-  player.value.thirst = character.value.water;
   
   vehicle.value.gear = gear.value;
   vehicle.value.speed = speed.value;
@@ -131,7 +131,7 @@ onMounted(() => {
   position: absolute;
   bottom: 20%;
   left: 1%;
-  width: 18vw;
+  width: 15vw;
   padding: 1vw;
   background-color: rgba(0, 0, 0, 0.5);
   color: white;

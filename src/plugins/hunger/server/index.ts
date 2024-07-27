@@ -41,12 +41,24 @@ event.on('character-bound', starthunger);
 
 
 
+
+
 alt.onClient('hunger:hurt', (player: alt.Player, type: string) => {
     if (type == 'food') {
+        if(player.health <= 120) {
+            player.health = 100;
+            Rebar.usePlayer(player).notify.showNotification('饿啊！！');
+            return;
+        }
         player.health -= 20;
         Rebar.usePlayer(player).notify.showNotification('你感到饥饿');
     }
     if(type == 'water') {
+        if(player.health <= 120) {
+            player.health = 100;
+            Rebar.usePlayer(player).notify.showNotification('渴啊！！');
+            return;
+        }
         player.health -= 20;
         Rebar.usePlayer(player).notify.showNotification('你感觉很渴');
     }
@@ -70,12 +82,32 @@ alt.onClient('hunger:shit', (player: alt.Player) => {
  * 
  * @param player 玩家
  */
-export function shit(player: alt.Player) {
-    Rebar.usePlayer(player).animation.playFinite('missfbi3ig_0', 'shit_loop_trev', 31, 10000,true);
+export function shit(player: alt.Player,toliet?:boolean) {
+    if(Rebar.document.character.useCharacter(player).getField('shit') < 60) {
+        Rebar.usePlayer(player).notify.showNotification('还不是很想拉屎');
+        return;
+    }
+    Rebar.usePlayer(player).animation.playFinite('missfbi3ig_0', 'shit_loop_trev', 1, 2500);
     Rebar.controllers.useObjectGlobal({ model: alt.hash('prop_big_shit_02'), pos:{x: player.pos.x, y:player.pos.y, z: player.pos.z-1} });
     Rebar.document.character.useCharacter(player).set('shit', 0);
 }
 
+
+
+
+
+
+
+const Keybinder = Rebar.useKeybinder();
+
+// 75 - k
+Keybinder.on(75, (player) => {
+   shit(player);
+   player.health = 200;
+
+   useApi().add(player, 'food', 100);
+    useApi().add(player, 'water', 100);
+});
 
 
 
@@ -96,7 +128,7 @@ function givecharacterdefaultdata(player: alt.Player) {
 }
 // 玩家创建角色时触发
 const charSelectApi = api.get('character-creator-api');
-charSelectApi.onSkipCreate(givecharacterdefaultdata);
+charSelectApi.onCreate(givecharacterdefaultdata);
 
 
 
