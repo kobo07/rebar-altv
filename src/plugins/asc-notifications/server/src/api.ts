@@ -10,13 +10,27 @@ function useNotificationAPI() {
         addNotification(player, notification);
     }
 
+    function qucikcreate(player: alt.Player, message: string) {
+        const notification: Notification = {
+            icon: '❗',
+            title: '通知',
+            subTitle: '',
+            message
+        }
+            
+            addNotification(player, notification);
+        }
+
+
     function type() {
         return NotificationTypes;
     }
 
     return {
         create,
-        type
+        qucikcreate,
+        type,
+
     }
 }
 

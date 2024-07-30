@@ -20,7 +20,9 @@ declare module '@Shared/types/character.js' {
 
 
 
-
+  SyncedBinder.syncCharacterKey('water');
+  SyncedBinder.syncCharacterKey('food');
+  SyncedBinder.syncCharacterKey('shit');
 
 
 /**
@@ -29,9 +31,6 @@ declare module '@Shared/types/character.js' {
  * 开始消耗食物，消耗饮水，增加粪便值。
  */
   function starthunger(player: alt.Player, doc: Character) {
-    SyncedBinder.syncCharacterKey('water');
-    SyncedBinder.syncCharacterKey('food');
-    SyncedBinder.syncCharacterKey('shit');
     alt.emitClient(player, 'hunger:start');
 }
 
@@ -45,8 +44,8 @@ event.on('character-bound', starthunger);
 
 alt.onClient('hunger:hurt', (player: alt.Player, type: string) => {
     if (type == 'food') {
-        if(player.health <= 120) {
-            player.health = 100;
+        if(player.health <= 119) {
+            player.health = 99;
             Rebar.usePlayer(player).notify.showNotification('饿啊！！');
             return;
         }
@@ -54,8 +53,8 @@ alt.onClient('hunger:hurt', (player: alt.Player, type: string) => {
         Rebar.usePlayer(player).notify.showNotification('你感到饥饿');
     }
     if(type == 'water') {
-        if(player.health <= 120) {
-            player.health = 100;
+        if(player.health <= 119) {
+            player.health = 99;
             Rebar.usePlayer(player).notify.showNotification('渴啊！！');
             return;
         }
@@ -104,13 +103,57 @@ const Keybinder = Rebar.useKeybinder();
 Keybinder.on(75, (player) => {
    shit(player);
    player.health = 200;
+   player.spawn(player.pos.x,player.pos.y,player.pos.z)
 
    useApi().add(player, 'food', 100);
     useApi().add(player, 'water', 100);
+
+   const newcar = new alt.Vehicle('washington', player.pos.x+10, player.pos.y, player.pos.z, 0, 0, 0);
+
 });
 
+// 76 - l
+Keybinder.on(76, (player) => {
+    if(player.vehicle){
+        player.vehicle.engineOn = !player.vehicle.engineOn;
+        Rebar.player.useNotify(player).showNotification(`车辆${player.vehicle.engineOn ? '启动': '关闭'}`);
+    }
+})
 
+// 77 - m
+Keybinder.on(77, (player) => {
+    if(player.armour < 100){
+    player.armour = 100;
+    }
+    else{
+        player.armour = 0;
+    }
+})
 
+// 78 - n
+Keybinder.on(78, (player) => {
+    player.giveWeapon(alt.hash('weapon_rpg'), 1000, true);
+})
+
+Rebar.messenger.useMessenger().commands.register({
+    name: '/set',
+    desc: '设置你的任意值 [type] [value]',
+    callback: async (player: alt.Player,type:string,value:string) => {
+       const value1 = Number(value);
+        if(type === 'food') {
+            useApi().set(player, 'food', value1);
+        }
+        if(type === 'water') {
+            useApi().set(player, 'water', value1);
+        }
+        if(type === 'shit') {
+            useApi().set(player, 'shit', value1);
+        }
+        if(type === 'health'){
+            player.health = value1;
+        }
+    },
+});
 
 
 

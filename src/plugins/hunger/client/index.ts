@@ -39,9 +39,11 @@ function starthungerinterval() {
 
         if (shit < 100 - SHIT_INCREMENT && food > FOOD_DECREMENT ) {
             shit += SHIT_INCREMENT;
-        } else {
+        } 
+        if(shit > 100 - SHIT_INCREMENT)  {
             alt.emitServer('hunger:shit');
         }
+    
         alt.emitServer( 'hunger:update', food, water, shit);
         
     }, HUNGER_INTERVAL);

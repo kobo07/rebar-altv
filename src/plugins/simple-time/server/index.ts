@@ -6,6 +6,12 @@ const Rebar = useRebar();
 const ServerTime = Rebar.useServerTime();
 const RebarEvents = Rebar.events.useEvents();
 
+
+const currentTime = new Date(Date.now());
+ServerTime.setHour(currentTime.getHours());
+ServerTime.setMinute(currentTime.getMinutes());
+
+
 function updateTime() {
     const time = ServerTime.getTime();
 
@@ -43,10 +49,11 @@ function updateTime() {
     );
 }
 
-function handleUpdateTime(player: alt.Player) {
+async function handleUpdateTime(player: alt.Player) {
     const time = ServerTime.getTime();
     Rebar.player.useWorld(player).setTime(time.hour, time.minute, 0);
 }
 
 alt.setInterval(updateTime, 60000);
+
 RebarEvents.on('character-bound', handleUpdateTime);

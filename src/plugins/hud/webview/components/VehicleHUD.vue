@@ -2,7 +2,7 @@
   <div class="vehicle-hud">
     <div class="vehicle-status">
       <div class="status-item">
-        <i class="fas fa-tachometer-alt"></i> 时速: {{ vehicle.speed }} km/h
+        <i class="fas fa-tachometer-alt"></i> 时速: {{ Math.floor(vehicle.speed*3.6) }} km/h
       </div>
       <div class="status-item">
         <i class="fas fa-car-side"></i> 挡位: {{ vehicle.gear }}

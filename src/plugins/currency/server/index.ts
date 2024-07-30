@@ -1,174 +1,135 @@
 import * as alt from 'alt-server';
-
 import { useRebar } from '@Server/index.js';
-import { CharacterCurrencies, AccountCurrencies, AllCurrencyTypes } from '../shared/config.js';
 import { CollectionNames } from '@Server/document/shared.js';
 
-type CurrencyChangeCallback = (player: alt.Player, type: AllCurrencyTypes, amount: number) => void;
 
 const API_NAME = 'currency-api';
 const Rebar = useRebar();
-const callbacks: CurrencyChangeCallback[] = [];
-
-type CurrencyDefinitions = {
-    Character: CharacterCurrencies;
-    Account: AccountCurrencies;
-};
-
-function updateCurrency(player: alt.Player, type: AllCurrencyTypes, value: number) {
-    for (let cb of callbacks) {
-        cb(player, type, value);
-    }
-}
-
-function useCurrency<K extends keyof CurrencyDefinitions>(playerOrDatabaseId: alt.Player | string, type: K) {
-    // Omits keys which we are not interested in to be used for all functions below
-    type CurrencyType = K extends 'Character' ? keyof CharacterCurrencies : keyof AccountCurrencies;
-
-    let document:
-        | ReturnType<typeof Rebar.document.virtual.useVirtual>
-        | ReturnType<typeof Rebar.document.account.useAccount>
-        | ReturnType<typeof Rebar.document.character.useCharacter>;
-
-    if (type === 'Character') {
-        document =
-            typeof playerOrDatabaseId === 'string'
-                ? Rebar.document.virtual.useVirtual(playerOrDatabaseId, CollectionNames.Characters)
-                : Rebar.document.character.useCharacter(playerOrDatabaseId);
-    } else {
-        document =
-            typeof playerOrDatabaseId === 'string'
-                ? Rebar.document.virtual.useVirtual(playerOrDatabaseId, CollectionNames.Accounts)
-                : Rebar.document.account.useAccount(playerOrDatabaseId);
-    }
-
-    /**
-     * Add a currency of a given type and a given amount
-     *
-     * @param {CurrencyType} type
-     * @param {number} amount
-     * @return
-     */
-    async function add(type: CurrencyType, amount: number) {
-        const parameterName = String(type);
-        const data = await document.get<CurrencyDefinitions[K]>();
-        const value = data[parameterName] ? data[parameterName] : 0;
-
-        let amountChangedTo = 0;
-        if (value + amount > Number.MAX_SAFE_INTEGER) {
-            amountChangedTo = Number.MAX_SAFE_INTEGER;
-            await document.set(type, Number.MAX_SAFE_INTEGER);
-        } else {
-            amountChangedTo = value + amount;
-            await document.set(type, value + amount);
-        }
-
-        if (playerOrDatabaseId instanceof alt.Player) {
-            updateCurrency(playerOrDatabaseId, type, amount);
-        }
-
-        return true;
-
-    }
-
-    /**
-     * 
-     * 从金额中减去给定的货币类型，如果最小金额不可用则返回false
-     *
-     * @param {CurrencyType} type
-     * @param {number} amount
-     * @return
-     */
-    async function sub(type: CurrencyType, amount: number) {
-        const parameterName = String(type);
-        const data = await document.get<CurrencyDefinitions[K]>();
-        const value = data[parameterName] ? data[parameterName] : 0;
-        if (value < amount) {
-            return false;
-        }
-
-        const newAmount = value - amount;
-        await document.set(type, newAmount);
-
-        if (playerOrDatabaseId instanceof alt.Player) {
-            updateCurrency(playerOrDatabaseId, type, amount);
-        }
-
-        return true;
-    }
-
-    /**
-     * Override current currency amount, and set it to the exact amount.
-     *
-     * @param {CurrencyType} type
-     * @param {number} amount
-     * @return
-     */
-    async function set(type: CurrencyType, amount: number) {
-        await document.set(type, amount);
-
-        if (playerOrDatabaseId instanceof alt.Player) {
-            updateCurrency(playerOrDatabaseId, type, amount);
-        }
-
-        return true;
-    }
-
-    /**
-     * Check if a given currency type has a certain amount.
-     *
-     * @param {CurrencyType} type
-     * @param {number} amount
-     * @return
-     */
-    async function has(type: CurrencyType, amount: number) {
-        const currency = await document.getField<AccountCurrencies | CharacterCurrencies>(
-            type as keyof CharacterCurrencies & keyof AccountCurrencies,
-        );
-
-        return currency > amount;
-    }
-
-    /**
-     * Return the given amount for a currency type.
-     * Automatically returns `0` if currency type is undefined.
-     *
-     * @param {CurrencyType} type
-     * @return
-     */
-    async function get(type: CurrencyType) {
-        const currency = await document.getField<AccountCurrencies | CharacterCurrencies>(
-            type as keyof CharacterCurrencies & keyof AccountCurrencies,
-        );
-
-        return currency ? currency : 0;
-    }
-
-    return {
-        add,
-        get,
-        has,
-        set,
-        sub,
-    };
-}
-
-function useApi() {
-    function onChange(callback: CurrencyChangeCallback) {
-        callbacks.push(callback);
-    }
-
-    return {
-        useCurrency,
-        onChange,
-    };
-}
+const db =Rebar.database.useDatabase()
 
 declare global {
     export interface ServerPlugin {
         [API_NAME]: ReturnType<typeof useApi>;
     }
 }
+
+
+
+// global.d.ts
+import { Account } from '@Shared/types/account.js';
+import { Character } from '@Shared/types/character.js';
+
+
+declare module '@Shared/types/account.js' {
+    export interface Account {
+        points?: number;
+    }
+}
+
+    
+function useApi() {
+    async  function add (player:alt.Player,type:string,amount: number,characterid:number) {
+        if(!player){
+            const playerdata = await db.getMany<{ _id: string } &Character>({id:characterid},CollectionNames.Characters,)
+            if(!playerdata){
+                return false
+            }
+            if(type === 'cash') {
+                const cash = playerdata[0].cash
+                if (!cash) {
+                    playerdata[0].cash = amount;
+                    db.update({cash:playerdata[0].cash},CollectionNames.Characters)
+                    return true
+                }
+                const newValue = cash + amount
+                playerdata[0].cash = newValue;
+                db.update({cash:playerdata[0].cash},CollectionNames.Characters)
+                return true
+            }
+                
+                if(type === 'bank') {
+                    const bank = playerdata[0].bank
+                    if (!bank) {
+                        playerdata[0].bank = amount;
+                        db.update({bank:playerdata[0].bank},CollectionNames.Characters)
+                        return true
+                    }
+                    const newValue = bank + amount
+                    playerdata[0].bank = newValue;
+                    db.update({bank:playerdata[0].bank},CollectionNames.Characters)
+                    return true
+                }
+
+                    
+                    if(type === 'points') {
+                        const accountdata = db.getMany<{ _id: string } & Account>({_id:playerdata[0].account_id},CollectionNames.Accounts,)
+                        if(!accountdata){
+                            return false
+                        }
+                        const points = accountdata[0].points
+                        if (!points) {
+                            accountdata[0].points = amount;
+                            db.update({points:accountdata[0].points},CollectionNames.Accounts)
+                            return true
+                        }
+                        const newValue = points + amount
+                        accountdata[0].points = newValue;
+                        db.update({points:accountdata[0].points},CollectionNames.Accounts)
+                        return true
+                    }
+          
+            
+        }
+        if(type === 'cash') {
+            const cash = Rebar.document.character.useCharacter(player).getField('cash');
+            if (!cash) {
+                Rebar.document.character.useCharacter(player).set('cash', amount);
+                return true
+            }
+            const newValue = cash + amount
+            Rebar.document.character.useCharacter(player).set('cash', newValue);
+            return true
+        }
+
+        if(type === 'bank') {
+            const bank = Rebar.document.character.useCharacter(player).getField('bank');
+            if (!bank) {
+                Rebar.document.character.useCharacter(player).set('bank', amount);
+                return true
+               
+            }
+            const newValue = bank + amount
+            Rebar.document.character.useCharacter(player).set('bank', newValue);
+            return true
+       }
+           
+            if(type === 'points') {
+                const points = Rebar.document.account.useAccount(player).getField('points');
+                if (!points) {
+                    Rebar.document.account.useAccount(player).set('points', amount);
+                    return true
+                }
+                const newValue = points + amount
+                Rebar.document.account.useAccount(player).set('points', newValue);
+                return true
+            }
+        return false;
+        }
+                   
+            
+    
+
+     return {
+        add,
+     }
+
+
+
+}
+    
+
+
+
 
 Rebar.useApi().register(API_NAME, useApi());
 

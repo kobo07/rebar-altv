@@ -7,16 +7,17 @@ import { useWebview } from '@Server/player/webview.js';
 const api = useApi();
 const Rebar = useRebar();
 const serverConfig = Rebar.useServerConfig();
+const Keybinder = Rebar.systems.useKeybinder();
+const SyncedBinder = Rebar.systems.useStreamSyncedBinder();
 
 
+SyncedBinder.syncCharacterKey('id');
 
 serverConfig.set('hideHealthArmour',true)
 serverConfig.set('disablePistolWhip', true);
 serverConfig.set('disableVehicleEngineAutoStart', true);
 serverConfig.set('disableVehicleEngineAutoStop', true);
 serverConfig.set('disableVehicleSeatSwap', true);
-
-
 
 
 

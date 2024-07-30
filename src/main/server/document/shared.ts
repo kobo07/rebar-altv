@@ -7,4 +7,6 @@ export const CollectionNames = {
     Characters: 'Characters',
     Vehicles: 'Vehicles',
     Global: 'Global',
+    Item: 'item',
+    Storage:'storage',
 };
