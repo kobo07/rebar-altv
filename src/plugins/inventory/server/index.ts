@@ -65,27 +65,27 @@ interface Storage {
     content: BagItem[];
     position?: alt.Vector3;
     belongsTo?: master;
-    canrent?:boolean;
+    canrent?: boolean;
     isrent?: rent;
 }
 
 interface master {
-    characterid?:string
-    faction?:string
-    gov:boolean
+    characterid?: string
+    faction?: string
+    gov: boolean
 }
 
-interface rent{
-    starttime:number
-    endtime:number
-    price:number
-    isrent:boolean
-    rentmaster:master
+interface rent {
+    starttime: number
+    endtime: number
+    price: number
+    isrent: boolean
+    rentmaster: master
 }
 
 
 
-const allstorages = await db.getAll<{ _id: string } &Storage>('storage');
+const allstorages = await db.getAll<{ _id: string } & Storage>('storage');
 const allstorageslenth = allstorages.length;
 if (allstorageslenth > 0) {
     for (let i = 0; i < allstorageslenth; i++) {
@@ -96,21 +96,21 @@ if (allstorageslenth > 0) {
         const belongsTo = storage.belongsTo;
         const canrent = storage.canrent;
         const isrent = storage.isrent;
-        createInteraction( capacity, pos,canrent,belongsTo,storagename,isrent);
+        createInteraction(capacity, pos, canrent, belongsTo, storagename, isrent);
     }
 }
 
-function createInteraction(capacity: number, pos: alt.Vector3,canrent:boolean,belongsTo:master,storagename:string,isrent:rent) {
+function createInteraction(capacity: number, pos: alt.Vector3, canrent: boolean, belongsTo: master, storagename: string, isrent: rent) {
     const isiteractionexisting = alt.ColshapeCircle.all.find(colshape => colshape.pos.x === pos.x && colshape.pos.y === pos.y && colshape.pos.z === pos.z)
     if (isiteractionexisting) {
         return;
     }
-    const storage =  Rebar.controllers.useInteraction(new alt.ColshapeCylinder(pos.x, pos.y, pos.z, 5, 2), 'player')
+    const storage = Rebar.controllers.useInteraction(new alt.ColshapeCylinder(pos.x, pos.y, pos.z, 5, 2), 'player')
 
     Rebar.controllers.useBlipGlobal({
-        pos:pos,
-        color:3,
-        sprite: canrent? isrent.isrent? 473 : 474 : 473,
+        pos: pos,
+        color: 3,
+        sprite: canrent ? isrent.isrent ? 473 : 474 : 473,
         shortRange: true,
         text: storagename,
     })
@@ -118,8 +118,8 @@ function createInteraction(capacity: number, pos: alt.Vector3,canrent:boolean,be
     storage.on(handlestorage);
 }
 
-function handlestorage(player: alt.Player, colshape: alt.Colshape, uid: string){
-    const storageData = Rebar.database.useDatabase().getMany<Storage>({},'storage');
+function handlestorage(player: alt.Player, colshape: alt.Colshape, uid: string) {
+    const storageData = Rebar.database.useDatabase().getMany<Storage>({}, 'storage');
 
 }
 
@@ -134,7 +134,7 @@ function handlestorage(player: alt.Player, colshape: alt.Colshape, uid: string){
 
 function useApi() {
     async function createitem(item: BaseItem) {
-        const itemexiting = await  db.getMany<{ _id: string } & BaseItem>({ name: item.name }, 'item');
+        const itemexiting = await db.getMany<{ _id: string } & BaseItem>({ name: item.name }, 'item');
         if (itemexiting.length > 0) {
             return;
         }
@@ -226,7 +226,7 @@ async function sendInventoryNotification(player: alt.Player, itemName: string, q
         title: '库存',
         subTitle: '物品变动',
         message: operation === 'add' ? `你获得了 ${quantity} 个 ${itemName} `
-               : `你失去了 ${quantity} 个 ${itemName}。`,
+            : `你失去了 ${quantity} 个 ${itemName}。`,
     });
 }
 
@@ -280,31 +280,31 @@ function useInventory() {
 
     async function addItem(itemName: string, quantity: number, params: InventoryParams, customData?: any) {
         const { storage, player, characterId } = params;
-    
+
         if (!player && !storage && !characterId) {
             console.warn('Either player, storage, or characterId must be provided.');
             return;
         }
-    
+
         const item = await useApi().getitem(itemName);
         if (!item) {
             console.warn('Item not found.');
             return;
         }
-    
+
         const inventory = await getInventory(params);
         if (!inventory) {
             console.warn('Inventory not found.');
             return;
         }
-    
+
         // 计算当前库存的总权重
         const currentWeight = inventory.reduce((total, i) => total + i.weight * i.quantity, 0);
         const itemWeight = item.weight * quantity;
-    
+
         // 根据参数是否包含player, storage或characterId来确定容量
-        let capacity:number;
-        
+        let capacity: number;
+
         if (player) {
             capacity = Rebar.document.character.useCharacter(player).getField('capacity');
         } else if (storage) {
@@ -327,18 +327,18 @@ function useInventory() {
             console.warn('Capacity source not found.');
             return;
         }
-    
+
         // 检查添加的项目是否超出容量
         if (currentWeight + itemWeight > capacity) {
             console.warn('Not enough capacity.');
             return;
         }
-    
+
         let remainingQuantity = quantity;
-    
+
         while (remainingQuantity > 0) {
             const index = inventory.findIndex(i => i.name === itemName && (i.customData ? i.customData === customData : true) && i.quantity < item.maxStack);
-    
+
             if (index !== -1) {
                 const spaceAvailable = item.maxStack - inventory[index].quantity;
                 if (remainingQuantity <= spaceAvailable) {
@@ -359,30 +359,30 @@ function useInventory() {
                 remainingQuantity -= quantityToAdd;
             }
         }
-    
+
         await updateInventory(inventory, params);
-    
+
         if (player) {
             await sendInventoryNotification(player, itemName, quantity, 'add');
         }
     }
-    
+
 
 
     async function subItem(itemName: string, quantity: number, params: InventoryParams, slot?: number) {
         const { storage, player, characterId } = params;
-    
+
         if (!player && !storage && !characterId) {
             console.warn('Either player, storage, or characterId must be provided.');
             return;
         }
-    
+
         const inventory = await getInventory(params);
         if (!inventory) {
             console.warn('Inventory not found.');
             return;
         }
-    
+
         if (slot !== undefined) {
             // 针对指定的slot处理
             const index = inventory.findIndex((i) => i.slot === slot && i.name === itemName);
@@ -390,12 +390,12 @@ function useInventory() {
                 console.warn('Item not found in the specified slot.');
                 return;
             }
-    
+
             if (inventory[index].quantity < quantity) {
                 console.warn('Not enough quantity in the specified slot.');
                 return;
             }
-    
+
             inventory[index].quantity -= quantity;
             if (inventory[index].quantity <= 0) {
                 inventory.splice(index, 1);
@@ -404,15 +404,15 @@ function useInventory() {
             // 处理没有指定slot的情况
             let remainingQuantity = quantity;
             const items = inventory.filter((i) => i.name === itemName).sort((a, b) => a.quantity - b.quantity);
-    
+
             if (items.reduce((acc, item) => acc + item.quantity, 0) < quantity) {
                 console.warn('Not enough quantity in the inventory.');
                 return;
             }
-    
+
             for (const item of items) {
                 if (remainingQuantity <= 0) break;
-    
+
                 if (item.quantity > remainingQuantity) {
                     item.quantity -= remainingQuantity;
                     remainingQuantity = 0;
@@ -421,7 +421,7 @@ function useInventory() {
                     item.quantity = 0;
                 }
             }
-    
+
             // 移除数量为0的项
             for (let i = inventory.length - 1; i >= 0; i--) {
                 if (inventory[i].quantity <= 0) {
@@ -429,27 +429,27 @@ function useInventory() {
                 }
             }
         }
-    
+
         await updateInventory(inventory, params);
-    
+
         if (player) {
             await sendInventoryNotification(player, itemName, quantity, 'sub');
         }
     }
 
-    
 
 
-    async function createstorge (storagename:string , capacity:number , pos:alt.Vector3 ,belongsTo:master,canrent?:boolean) {
-            const storagedata = await db.getMany<{ _id: string } & Storage>({ name: storagename }, 'storage');
-            if (storagedata.length > 0) {
-                return;
-            }
-            db.create({name:storagename,capacity:capacity,pos:pos,belongsTo:belongsTo,canrent:canrent}, 'storage');
+
+    async function createstorge(storagename: string, capacity: number, pos: alt.Vector3, belongsTo: master, canrent?: boolean) {
+        const storagedata = await db.getMany<{ _id: string } & Storage>({ name: storagename }, 'storage');
+        if (storagedata.length > 0) {
+            return;
+        }
+        db.create({ name: storagename, capacity: capacity, pos: pos, belongsTo: belongsTo, canrent: canrent }, 'storage');
     }
 
-    
-    async function deletestorage (storagename:string) {
+
+    async function deletestorage(storagename: string) {
         const storagedata = await db.getMany<{ _id: string } & Storage>({ name: storagename }, 'storage');
         if (storagedata.length <= 0) {
             return;
@@ -503,21 +503,21 @@ useApi().createitem({
 
 
 Rebar.useKeybinder().on(82, (player) => {//R
-    useInventory().addItem('大剑', 1, {player:player});
-    useInventory().addItem('魔方', 1, {player:player});
+    useInventory().addItem('大剑', 1, { player: player });
+    useInventory().addItem('魔方', 1, { player: player });
 })
 
 
 
 alt.onClient('UpdateInventory', (player, inventory) => {
-    useInventory().updateInventory(inventory, {player:player});
+    useInventory().updateInventory(inventory, { player: player });
 }
 )
 
 
 
 alt.onClient('changeitemslot', async (player: alt.Player, fromSlot: number, toSlot: number) => {
-    const inventory = await useInventory().getInventory({player:player});
+    const inventory = await useInventory().getInventory({ player: player });
     if (!inventory) {
         return;
     }
@@ -534,11 +534,11 @@ alt.onClient('changeitemslot', async (player: alt.Player, fromSlot: number, toSl
 
     if (!toItem) {
         fromItem.slot = toSlot;
-        await useInventory().updateInventory(inventory,{player:player});
+        await useInventory().updateInventory(inventory, { player: player });
         return;
     }
 
     fromItem.slot = toSlot;
     toItem.slot = fromSlot;
-    await useInventory().updateInventory(inventory,{player:player});
+    await useInventory().updateInventory(inventory, { player: player });
 });
