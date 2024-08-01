@@ -1,7 +1,7 @@
 /**
  * Used to store Discord Information, IPs, and User Data
  */
-export type Account = {
+export interface Account  {
     /**
      * A unique MongoDB identifier to identify the accoutn in the database.
      * @type {*}

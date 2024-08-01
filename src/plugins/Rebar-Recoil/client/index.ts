@@ -17,7 +17,7 @@ alt.everyTick(() => {
     const isShootingControlPressed = native.isControlPressed(0, 24);
     const isRollControlPressed = native.isControlPressed(0, 22);
 
-    if (isShooting) {
+    if (isShooting && !alt.Player.local.vehicle) {
         alt.setStat('shooting_ability', Math.min(Math.max(0, config.shootingLevel), 1000));
         if (isShootingControlPressed && !isAiming) {
             native.setGameplayCamRelativePitch(native.getGameplayCamRelativePitch() + Random(0, config.relativePitch + config.relativePitchNotAiming), 1.5);

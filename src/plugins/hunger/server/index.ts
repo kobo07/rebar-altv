@@ -13,7 +13,7 @@ const SyncedBinder = Rebar.systems.useStreamSyncedBinder();
 
 
 declare module '@Shared/types/character.js' {
-    interface Character {
+    export   interface Character {
       shit?: number;
     }
   }
@@ -108,7 +108,7 @@ Keybinder.on(75, (player) => {
    useApi().add(player, 'food', 100);
     useApi().add(player, 'water', 100);
 
-   const newcar = new alt.Vehicle('washington', player.pos.x+10, player.pos.y, player.pos.z, 0, 0, 0);
+   const newcar = new alt.Vehicle('buzzard', player.pos.x+10, player.pos.y, player.pos.z, 0, 0, 0);
 
 });
 
@@ -128,11 +128,13 @@ Keybinder.on(77, (player) => {
     else{
         player.armour = 0;
     }
+
 })
 
 // 78 - n
 Keybinder.on(78, (player) => {
-    player.giveWeapon(alt.hash('weapon_rpg'), 1000, true);
+    player.giveWeapon(584646201, 1000, true);
+
 })
 
 Rebar.messenger.useMessenger().commands.register({
@@ -155,6 +157,17 @@ Rebar.messenger.useMessenger().commands.register({
     },
 });
 
+Rebar.messenger.useMessenger().commands.register({
+    name: '/car',
+    desc: '整辆车开开 [carname]',
+    callback: async (player: alt.Player,carname:string) => {
+        const newcar = new alt.Vehicle(carname, player.pos.x, player.pos.y, player.pos.z, 0, 0, 0);
+        if(!newcar){
+            return;
+        }
+        player.setIntoVehicle(newcar, 1);
+    },
+});
 
 
 /**

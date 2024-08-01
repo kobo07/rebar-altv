@@ -11,7 +11,7 @@ const data = ref<PlayerStats>({
     speed: 0,
     weapon: 0xa2719263, // Fist
     ammo: 0,
-    stamina: 100,
+    stamina: 0,
     inVehicle: false,
     inWater: false,
     isAiming: false,

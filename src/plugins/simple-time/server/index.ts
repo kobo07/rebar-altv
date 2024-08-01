@@ -44,9 +44,9 @@ function updateTime() {
         handleUpdateTime(player);
     }
 
-    alt.log(
+   /* alt.log(
         `World Time - ${time.hour <= 9 ? `0${time.hour}` : time.hour}:${time.minute <= 9 ? `0${time.minute}` : time.minute}`,
-    );
+    );*/
 }
 
 async function handleUpdateTime(player: alt.Player) {

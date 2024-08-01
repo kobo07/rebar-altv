@@ -8,13 +8,16 @@
           <span><i class="fas fa-clock"></i> 状态: {{ player.status }}</span>
           <span><i class="fas fa-clock"></i> 时间: {{ time }}</span>
           <span><i class="fas fa-heart"></i> 健康: {{ player.healthStatus }}</span>
-          <span><i class="fas fa-map-marker-alt"></i> 位置: {{ street }}</span>
-
-          <div class="game-state">
-          <span><i class="fas fa-sync"></i> 刷新率: {{ fps }}</span>
+    
           <span><i class="fas fa-network-wired"></i> 延迟: {{ ping }}</span>
-          </div>
+
       </div>
+
+
+        <div class="pos" >
+      <span><i class="fas fa-map-marker-alt"></i> 位置: {{ street }}</span>
+    </div>
+
       <div class="status-bars">
         <StatusBar label="血量" :value="Math.max(Math.floor(health - 100), 0)" color="linear-gradient(90deg, rgba(139,0,0,1) 0%, rgba(255,69,0,1) 100%)"    :icon="healthIcon()"  />
         <StatusBar label="耐力" :value="Math.floor(stamina)" color="linear-gradient(90deg, rgba(0,100,0,1) 0%, rgba(50,205,50,1) 100%)" :icon="staminaIcon()" />
@@ -46,7 +49,6 @@ import { useMinimap } from '@Composables/useMinimap.js';
 const syncedMeta = useSyncedMeta();
 const character = syncedMeta.getCharacter();
 const vehicles = syncedMeta.getVehicle();
-
 const { minimap } = useMinimap();
 
 const getStylePosition = computed(() => {
@@ -193,6 +195,7 @@ function pooicon(): string {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+
   gap: 0.5vw;
   border: 10px solid rgba(0, 0, 0, 0.5);
 }
@@ -201,7 +204,9 @@ function pooicon(): string {
   margin: 0.2vw;
   display: flex;
   align-items: center;
-  
+  color: #ffffff; /* 纯白色字体 */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 现代化字体 */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); /* 黑色描边，增加对比度 */
 }
 
 .info span i {
