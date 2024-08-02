@@ -67,8 +67,8 @@ async function sendNotification(player: alt.Player, type: string, amount: number
         title: '货币',
         subTitle,
         message: operation === 'add' ? `您的账户新增 ${amount} ${subTitle}，当前总计 ${newAmount} ${subTitle}。`
-               : operation === 'sub' ? `您的账户扣除 ${amount} ${subTitle}，当前总计 ${newAmount} ${subTitle}。`
-               : `您的账户被更新为 ${amount} ${subTitle}，当前总计 ${newAmount} ${subTitle}。`,
+            : operation === 'sub' ? `您的账户扣除 ${amount} ${subTitle}，当前总计 ${newAmount} ${subTitle}。`
+                : `您的账户被更新为 ${amount} ${subTitle}，当前总计 ${newAmount} ${subTitle}。`,
     });
 }
 
@@ -179,11 +179,33 @@ function useApi() {
         return false;
     }
 
+
+    async function cost(params: PlayerParams,  amount: number) {
+        const cash = await get(params, 'cash');
+        const bank = await get(params, 'bank');
+        const all = cash + bank;
+        if (all < amount) {
+            return false;
+        }
+        if(amount < cash) {
+            await sub(params, 'cash', amount);
+            return true;
+        } else {
+            await sub(params, 'cash', cash);
+            await sub(params, 'bank', amount - cash);
+            return true;
+        }
+    }
+
+
+
+
     return {
         add,
         sub,
         set,
         get,
+        cost,
     };
 }
 
@@ -218,7 +240,7 @@ atm.forEach((atm, index) => {
         promptbar.hidePromptBar(player);
     });
 
-    
+
 
 
     const blip = Rebar.controllers.useBlipGlobal({

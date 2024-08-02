@@ -1,22 +1,17 @@
 <template>
   <div class="inventory">
     <div v-for="slot in backpackSlots" :key="slot" class="inventory-item">
-      <Draggable
-        @onDrag="handleDrag"
-        @onLeftClick="handleClick"
-        @onDblClick="handleDoubleClick"
-        @onMiddleClick="handleMiddleClick"
-        @onRightClick="(id) => handleRightClick(id)"
-      >
+      <Draggable @onDrag="handleDrag" @onLeftClick="handleClick" @onDblClick="handleDoubleClick"
+        @onMiddleClick="handleMiddleClick" @onRightClick="(id) => handleRightClick(id)">
         <div :id="`slot-${slot}`" class="item-box">
           <template v-if="getInventoryItem(slot)">
             <img :src="getIconPath(getInventoryItem(slot).icon)" :alt="getInventoryItem(slot).name" class="item-icon" />
             <div class="item-details">
               <p>{{ getInventoryItem(slot).name }}</p>
               <p class="quantity">数量: {{ getInventoryItem(slot).quantity }}</p>
-              <p class="weight">重量: {{ getInventoryItem(slot).weight }}</p>
+              <p class="weight">重量: {{ getInventoryItem(slot).totalWeight }}</p>
             </div>
-          </template> 
+          </template>
         </div>
       </Draggable>
     </div>
@@ -38,17 +33,15 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed, onBeforeUnmount } from 'vue';
 import { useEvents } from '@Composables/useEvents.js';
-import { useSyncedMeta } from '../../../../webview/composables/useSyncedMeta.js';
 import { findIcon } from './findicon.js'; // 调整路径
 import { BagItem } from '../server/index.js';
 import Draggable from '../../../../webview/src/components/Draggable.vue';
 
 const mes = ref('');
+const event = useEvents();
 
-const syncedMeta = useSyncedMeta();
-const character = syncedMeta.getCharacter();
 
-const characterInventory = computed(() => character.value.inventory || []);
+const characterInventory = ref<BagItem[]>([]);
 const backpackSlots = ref<number[]>([]);
 
 const isContextMenuVisible = ref(false);
@@ -68,14 +61,6 @@ function handleDrag(from_id: string, to_id: string) {
   const fromSlot = parseInt(from_id.replace('slot-', ''), 10);
   const toSlot = parseInt(to_id.replace('slot-', ''), 10);
 
-  /* if (isNaN(fromSlot) || isNaN(toSlot)) return;
-
-  const temp = characterInventory.value[fromSlot];
-  characterInventory.value[fromSlot] = characterInventory.value[toSlot];
-  characterInventory.value[toSlot] = temp;
-
-  updateinventory();*/
-
   changeitemslot(fromSlot, toSlot);
 
   mes.value = `drag: ${from_id} to ${to_id}`;
@@ -83,26 +68,22 @@ function handleDrag(from_id: string, to_id: string) {
 }
 
 function handleClick(id: string) {
-  console.log('left-click: ', id);
   mes.value = `left-click: ${id}`;
 }
 
 function handleDoubleClick(id: string) {
-  console.log('dbl-click: ', id);
   mes.value = `dbl-click: ${id}`;
 }
 
 function handleMiddleClick(id: string) {
-  console.log('middle-click: ', id);
   mes.value = `middle-click: ${id}`;
 }
 
 function handleRightClick(id: string) {
-  console.log('right-click: ', id);
   mes.value = `right-click: ${id}`;
   selectedSlot.value = parseInt(id.replace('slot-', ''), 10);
   const item = characterInventory.value.find(item => item.slot === selectedSlot.value);
-  if (!item) { 
+  if (!item) {
     return;
   }
   isContextMenuVisible.value = true;
@@ -145,9 +126,7 @@ function cancel() {
   isContextMenuVisible.value = false;
 }
 
-function updateinventory(){
-  useEvents().emitServer('UpdateInventory', character.value.inventory);
-}
+
 
 function changeitemslot(fromSlot: number, toSlot: number) {
   useEvents().emitServer('changeitemslot', fromSlot, toSlot);
@@ -160,21 +139,28 @@ function getInventoryItem(slot: number) {
 }
 
 onMounted(() => {
-  if (character.value && character.value.inventory) {
-    
+  event.emitServer('GetInventory');
+
+  if (characterInventory.value ) {
+
   } else {
-    character.value.inventory = 
-     [
-      { icon: 'sword.png', name: '剑', quantity: 1, weight: 1, slot: 0, type: '武器', desc: '剑是一把拥有强大力量的武器。', maxStack: 1 },
-      { icon: 'rubik.png', name: '魔方', quantity: 1, weight: 1, slot: 1, type: '武器', desc: '头盔是用来保护头部的装备。', maxStack: 1 },
-      { icon: 'iron-ore.png', name: '铁矿', quantity: 1, weight: 1, slot: 2, type: '武器', desc: '头盔是用来保护头部的装备。', maxStack: 1 },
-    ];
+    characterInventory.value =
+      [
+        { icon: 'sword.png', name: '剑', quantity: 1, weight: 1, slot: 0, type: '武器', desc: '剑是一把拥有强大力量的武器。', maxStack: 1, totalWeight: 1 },
+        { icon: 'rubik.png', name: '魔方', quantity: 1, weight: 1, slot: 1, type: '武器', desc: '头盔是用来保护头部的装备。', maxStack: 1, totalWeight: 1 },
+        { icon: 'iron-ore.png', name: '铁矿', quantity: 1, weight: 1, slot: 2, type: '武器', desc: '头盔是用来保护头部的装备。', maxStack: 1, totalWeight: 1 },
+      ];
   }
 
   // 假设背包有50个槽位
   const totalSlots = 50;
   backpackSlots.value = Array.from({ length: totalSlots }, (_, index) => index);
 });
+
+event.on('sendinventory', (inventory: BagItem[]) => {
+  characterInventory.value = inventory;
+}
+)
 
 const getIconPath = (iconName: string) => {
   return findIcon(iconName);

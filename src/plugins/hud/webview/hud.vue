@@ -19,7 +19,7 @@
     </div>
 
       <div class="status-bars">
-        <StatusBar label="血量" :value="Math.max(Math.floor(health - 100), 0)" color="linear-gradient(90deg, rgba(139,0,0,1) 0%, rgba(255,69,0,1) 100%)"    :icon="healthIcon()"  />
+        <StatusBar label="血量" :value="Math.max(Math.floor(health - 99), 0)" color="linear-gradient(90deg, rgba(139,0,0,1) 0%, rgba(255,69,0,1) 100%)"    :icon="healthIcon()"  />
         <StatusBar label="耐力" :value="Math.floor(stamina)" color="linear-gradient(90deg, rgba(0,100,0,1) 0%, rgba(50,205,50,1) 100%)" :icon="staminaIcon()" />
         <transition name="fade-scale">
           <StatusBar v-show="armour !== 0" label="护甲" :value="armour" color="linear-gradient(90deg, rgba(105,105,105,1) 0%, rgba(211,211,211,1) 100%)" icon="fa-shield-alt" />

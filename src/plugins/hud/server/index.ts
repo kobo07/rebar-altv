@@ -10,6 +10,12 @@ const serverConfig = Rebar.useServerConfig();
 const Keybinder = Rebar.systems.useKeybinder();
 const SyncedBinder = Rebar.systems.useStreamSyncedBinder();
 
+declare module 'alt-shared' {
+    export interface ICustomEntityStreamSyncedMeta {
+        id?: number;
+    }
+}
+
 
 SyncedBinder.syncCharacterKey('id');
 
