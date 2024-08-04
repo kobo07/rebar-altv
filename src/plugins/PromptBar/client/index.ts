@@ -11,7 +11,7 @@ const webview = Rebar.webview.useWebview();
 const messenger = Rebar.messenger.useMessenger();
 
 
-webview.show('promptbar', 'persistent');
+webview.show('promptbar', 'overlay');
 
 declare global {
     export interface ClientPlugin {

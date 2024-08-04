@@ -14,6 +14,12 @@ let selectedEntity = null;
 // 用于存储当前选项
 let currentOptions = [];
 
+// 动态标记的参数
+let markerHeightOffset = 0;
+let markerAlpha = 100;
+let rotation = 0;
+let markerAnimationPhase = 0;
+
 // 获取玩家与实体的距离
 function getDistance(entity) {
     const playerPos = alt.Player.local.pos;
@@ -119,17 +125,24 @@ function updateSelectedEntity() {
 function drawMarker(entity) {
     if (!entity) return;
     const entityPos = native.getEntityCoords(entity.scriptID, true);
+    const entityheight = native.getEntityHeight(entity.scriptID,entityPos.x,entityPos.y,entityPos.z,true,true);
 
-    // 使用 MarkerTypeChevronUpx1 类型的标记，在实体上方绘制一个标记
+      markerAnimationPhase += 0.002;
+      if (markerAnimationPhase > 1) markerAnimationPhase = 0;
+      
+      markerHeightOffset = 0.25 * Math.sin(markerAnimationPhase * Math.PI * 2);
+      markerAlpha = 150 + 50 * Math.sin(markerAnimationPhase * Math.PI * 2);
+      rotation = 360 * markerAnimationPhase;
+
+    // 使用 MarkerTypeChevronUpx1 类型的标记，在实体上方绘制一个动态标记
     native.drawMarker(
-        20, entityPos.x, entityPos.y, entityPos.z + 2.5, 0, 0, 0, 0, 180, 0, 0.5, 0.5, 0.5,
-        255, 255, 255, 150, false, true, 2, false, null, null, false
+        20, entityPos.x, entityPos.y, entityheight + 1 + markerHeightOffset, 0, 0, 0, 0, 180, rotation, 0.5, 0.5, 0.5,
+        255, 255, 255, markerAlpha, false, true, 2, false, null, null, false
     );
 }
 
-// 每帧更新选中实体并绘制标记
+// 每帧绘制标记
 alt.everyTick(() => {
-    updateSelectedEntity();
     if (webview.isSpecificPageOpen('wheelmenu') && selectedEntity) {
         drawMarker(selectedEntity);
     }
@@ -154,6 +167,8 @@ alt.on('keydown', (key) => {
         if (webview.isAnyPageOpen() && !webview.isSpecificPageOpen('wheelmenu')) {
             return;
         }
+
+        updateSelectedEntity(); // 按下X键时更新选中实体
 
         if (selectedEntity) {
             const entityType = selectedEntity.type;
@@ -288,3 +303,5 @@ webview.on('executeAction', ({ actionIndex, entityId }) => {
     webview.hide('wheelmenu');
     Rebar.player.useControls().setControls(true);
 });
+
+

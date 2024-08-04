@@ -116,37 +116,17 @@ const Keybinder = Rebar.useKeybinder();
 
 // 75 - k
 Keybinder.on(75, async (player) => {
-
     const hurt = await Rebar.useApi().getAsync('hurt-api')
-
     hurt.allcure(player);
-
     shit(player);
     player.health = 200;
     player.spawn(player.pos.x, player.pos.y, player.pos.z)
-
     useApi().add(player, 'food', 100);
     useApi().add(player, 'water', 100);
 });
 
-// 76 - l
-Keybinder.on(76, (player) => {
-    if (player.vehicle) {
-        player.vehicle.engineOn = !player.vehicle.engineOn;
-        Rebar.player.useNotify(player).showNotification(`车辆${player.vehicle.engineOn ? '启动' : '关闭'}`);
-    }
-})
 
-// 77 - m
-Keybinder.on(77, (player) => {
-    if (player.armour < 100) {
-        player.armour = 100;
-    }
-    else {
-        player.armour = 0;
-    }
 
-})
 
 // 78 - n
 Keybinder.on(78, (player) => {

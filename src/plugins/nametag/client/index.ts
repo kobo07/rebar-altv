@@ -13,7 +13,7 @@ const messenger = Rebar.messenger.useMessenger();
 
 
 alt.everyTick(() => {
-    drawText2D(`X: ${Math.floor(alt.Player.local.pos.x)}   Y: ${Math.floor(alt.Player.local.pos.y)}   Z: ${Math.floor(alt.Player.local.pos.z)}`, { x: 0.5, y: 0 }, 0.5, new alt.RGBA(255, 255, 100));
+    drawText2D(`X: ${Math.floor(alt.Player.local.pos.x)}   Y: ${Math.floor(alt.Player.local.pos.y)}   Z: ${Math.floor(alt.Player.local.pos.z)}`, { x: 0.5, y: 0 }, 0.5, new alt.RGBA(255, 255, 255));
 })
 
 

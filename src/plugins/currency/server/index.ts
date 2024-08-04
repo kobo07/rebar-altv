@@ -21,10 +21,23 @@ declare module '@Shared/types/account.js' {
     }
 }
 
+declare module '@Shared/types/character.js' {
+    export interface Character {
+        banknumber?: number;
+        BankStatement?: BankStatement[];
+    }
+}
+
+export interface BankStatement {
+    id: number;
+    type: string;
+    description: string;
+}
+
 /**
  * 在玩家创建角色后给予货币系统相关的文档参数
  */
-function giveCharacterDefaultData(player: alt.Player) {
+async function giveCharacterDefaultData(player: alt.Player) {
     const doc = Rebar.document.character.useCharacter(player);
     if (!doc) {
         return;
@@ -37,10 +50,25 @@ function giveCharacterDefaultData(player: alt.Player) {
         return;
     }
     acdoc.set('points', 0);
+
+    // 生成唯一的银行账户号码
+    let banknumber: number;
+    let isbanknumberexiting: ({ _id: string } & Character)[];
+
+    do {
+        banknumber = Math.floor(Math.random() * 900000000) + 100000000; // 生成一个9位数的随机数
+        isbanknumberexiting = await db.getMany<{ _id: string } & Character>({ banknumber: banknumber }, CollectionNames.Characters);
+    } while (isbanknumberexiting.length > 0);
+
+    doc.set('banknumber', banknumber);
+    doc.set('BankStatement', []);
 }
+
 // 玩家创建角色时触发
 const charSelectApi = api.get('character-creator-api');
 charSelectApi.onCreate(giveCharacterDefaultData);
+
+
 
 type PlayerParams = {
     player?: alt.Player;
@@ -179,15 +207,14 @@ function useApi() {
         return false;
     }
 
-
-    async function cost(params: PlayerParams,  amount: number) {
+    async function cost(params: PlayerParams, amount: number) {
         const cash = await get(params, 'cash');
         const bank = await get(params, 'bank');
         const all = cash + bank;
         if (all < amount) {
             return false;
         }
-        if(amount < cash) {
+        if (amount < cash) {
             await sub(params, 'cash', amount);
             return true;
         } else {
@@ -197,7 +224,127 @@ function useApi() {
         }
     }
 
+    async function Transfer(params: PlayerParams, amount: number, targetbanknumber: number) {
+        const bank = await get(params, 'bank');
+        if (bank < amount) {
+            return false;
+        }
+        const target = await db.getMany<{ _id: string } & Character>({ banknumber: targetbanknumber }, CollectionNames.Characters);
+        if (!target || target.length === 0) {
+            return false;
+        }
+        const targetbank = target[0].bank;
+        const newtargetbank = targetbank + amount;
+        await sub(params, 'bank', amount);
+        await db.update({ _id: target[0]._id, bank: newtargetbank }, CollectionNames.Characters);
 
+        const now = new Date();
+        const formattedTime = formatDate(now);
+
+        if (params.characterId) {
+            const data = await db.getMany<{ _id: string } & Character>({ id: params.characterId }, CollectionNames.Characters);
+            if (!data || data.length === 0) {
+                return false;
+            }
+            const bankStatement = data[0].BankStatement;
+            const bankStatementId = bankStatement.length + 1;
+            const banknumber = data[0].banknumber;
+            await addbankstatement(params, { id: bankStatementId, type: '转账', description: `${formattedTime} 账户 ${banknumber} 转账 ${amount} 到 账户 ${targetbanknumber}` });
+            return true;
+        }
+
+        const character = Rebar.document.character.useCharacter(params.player);
+        const bankStatement = character.getField('BankStatement');
+        const bankStatementId = bankStatement.length + 1;
+        const banknumber = character.getField('banknumber');
+        await addbankstatement(params, { id: bankStatementId, type: '转账', description: `${formattedTime} 账户 ${banknumber} 转账 ${amount} 到 账户 ${targetbanknumber}` });
+        return true;
+    }
+
+
+    async function Withdraw(params: PlayerParams, amount: number) {
+        const bank = await get(params, 'bank');
+        if (bank < amount) {
+            return false;
+        }
+        await sub(params, 'bank', amount);
+        await add(params, 'cash', amount);
+
+        const now = new Date();
+        const formattedTime = formatDate(now);
+
+        if (params.characterId) {
+            const data = await db.getMany<{ _id: string } & Character>({ id: params.characterId }, CollectionNames.Characters);
+            if (!data || data.length === 0) {
+                return false;
+            }
+            const bankStatement = data[0].BankStatement;
+            const bankStatementId = bankStatement.length + 1;
+            const banknumber = data[0].banknumber;
+            await addbankstatement(params, { id: bankStatementId, type: '取款', description: `${formattedTime} 账户 ${banknumber} 取出 ${amount}` });
+            return true;
+        }
+
+        const character = Rebar.document.character.useCharacter(params.player);
+        const bankStatement = character.getField('BankStatement');
+        const bankStatementId = bankStatement.length + 1;
+        const banknumber = character.getField('banknumber');
+        await addbankstatement(params, { id: bankStatementId, type: '取款', description: `${formattedTime} 账户 ${banknumber} 取出 ${amount}` });
+
+        return true;
+    }
+
+
+    async function Deposit(params: PlayerParams, amount: number) {
+        const cash = await get(params, 'cash');
+        if (cash < amount) {
+            return false;
+        }
+        await sub(params, 'cash', amount);
+        await add(params, 'bank', amount);
+
+        const now = new Date();
+        const formattedTime = formatDate(now);
+
+        if (params.characterId) {
+            const data = await db.getMany<{ _id: string } & Character>({ id: params.characterId }, CollectionNames.Characters);
+            if (!data || data.length === 0) {
+                return false;
+            }
+            const bankStatement = data[0].BankStatement;
+            const bankStatementId = bankStatement.length + 1;
+            const banknumber = data[0].banknumber;
+            await addbankstatement(params, { id: bankStatementId, type: '存款', description: `${formattedTime} 账户 ${banknumber} 存入 ${amount}` });
+            return true;
+        }
+
+        const character = Rebar.document.character.useCharacter(params.player);
+        const bankStatement = character.getField('BankStatement');
+        const bankStatementId = bankStatement.length + 1;
+        const banknumber = character.getField('banknumber');
+        await addbankstatement(params, { id: bankStatementId, type: '存款', description: `${formattedTime} 账户 ${banknumber} 存入 ${amount}` });
+        return true;
+    }
+
+    async function addbankstatement(params: PlayerParams, BankStatement1: BankStatement) {
+        const { player, characterId } = params;
+        if (!player) {
+            const playerData = await db.getMany<{ _id: string } & Character>({ id: characterId }, CollectionNames.Characters);
+            if (!playerData || playerData.length === 0) {
+                return false;
+            }
+            const BankStatement = playerData[0].BankStatement;
+            BankStatement.push(BankStatement1);
+            await db.update({ _id: playerData[0]._id, BankStatement: BankStatement }, CollectionNames.Characters);
+            return true;
+        }
+
+        const character = Rebar.document.character.useCharacter(player);
+        const BankStatement = character.getField('BankStatement');
+        BankStatement.push(BankStatement1);
+        character.set('BankStatement', BankStatement);
+        return true;
+    }
 
 
     return {
@@ -206,6 +353,10 @@ function useApi() {
         set,
         get,
         cost,
+        Transfer,
+        Withdraw,
+        Deposit,
+        addbankstatement
     };
 }
 
@@ -213,7 +364,18 @@ Rebar.useApi().register(API_NAME, useApi());
 
 
 
-
+function formatDate(date: Date): string {
+    const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false,
+    };
+    return date.toLocaleString('zh-CN', options);
+}
 
 
 
@@ -240,9 +402,6 @@ atm.forEach((atm, index) => {
         promptbar.hidePromptBar(player);
     });
 
-
-
-
     const blip = Rebar.controllers.useBlipGlobal({
         color: 25,
         pos: new alt.Vector3(atm.x, atm.y, atm.z),
@@ -251,3 +410,17 @@ atm.forEach((atm, index) => {
         text: `ATM`, // 使用动态生成的ID
     });
 });
+
+
+
+
+Rebar.messenger.useMessenger().commands.register({
+    name: '/testbank',
+    desc: '测试一下金额',
+    callback: async (player: alt.Player) => {
+       useApi().add({player}, 'bank', 1000);
+       useApi().add({player}, 'cash', 1000);
+       useApi().add({player}, 'points', 1000);
+    },
+});
+
