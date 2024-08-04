@@ -2,6 +2,7 @@ import { useRebarClient } from '@Client/index.js';
 import { useWebview } from '@Client/webview/index.js';
 import * as native from 'natives';
 import * as alt from 'alt-client';
+import { getDirectionFromRotation } from '@Client/utility/math/index.js';
 
 const Rebar = useRebarClient();
 const webview = Rebar.webview.useWebview();
@@ -24,54 +25,94 @@ function getDistance(entity) {
     );
 }
 
+// 使用 raycast 获取玩家摄像机中心的实体
+function performRaycast() {
+    const start = alt.getCamPos();
+    const forwardVector = getDirectionFromRotation(native.getFinalRenderedCamRot(2));
+    const end = new alt.Vector3(
+        start.x + forwardVector.x * 500,
+        start.y + forwardVector.y * 500,
+        start.z + forwardVector.z * 500,
+    );
+
+    const raycast = native.startExpensiveSynchronousShapeTestLosProbe(
+        start.x,
+        start.y,
+        start.z,
+        end.x,
+        end.y,
+        end.z,
+        -1,
+        alt.Player.local.scriptID,
+        4,
+    );
+
+    const [result, didHit, , , entityHit] = native.getShapeTestResult(raycast);
+    return { result, didHit, entityHit };
+}
+
 // 更新选中的实体
 function updateSelectedEntity() {
-    const playerPos = alt.Player.local.pos;
+    const { result, didHit, entityHit } = performRaycast();
+
     let nearestEntity = null;
     let nearestDistance = 4; // 距离超过4米就不再选中
 
-    // 优先级：车辆 > 玩家 > 物体
-
-    // 获取所有车辆
-    const vehicles = alt.Vehicle.all;
-    vehicles.forEach(vehicle => {
-        const distance = getDistance(vehicle);
-        if (distance < nearestDistance) {
-            nearestDistance = distance;
-            nearestEntity = vehicle;
-        }
-    });
-
-    // 获取所有玩家
-    const players = alt.Player.all;
-    players.forEach(player => {
-        if (player.scriptID !== alt.Player.local.scriptID) {
-            const distance = getDistance(player);
-            if (distance < nearestDistance) {
+    if (didHit && result) {
+        const entityType = native.getEntityType(entityHit);
+        if (entityType !== 0) {
+            const distance = getDistance({ scriptID: entityHit });
+            if (distance <= nearestDistance) {
+                nearestEntity = { scriptID: entityHit, type: entityType };
                 nearestDistance = distance;
-                nearestEntity = player;
             }
         }
-    });
-
-    // 获取所有物体
-    const objects = alt.Object.all;
-    objects.forEach(object => {
-        const distance = getDistance(object);
-        if (distance < nearestDistance) {
-            nearestDistance = distance;
-            nearestEntity = object;
-        }
-    });
-
-    // 当玩家在车内时，默认选中车辆
-    if (alt.Player.local.vehicle) {
-        nearestEntity = alt.Player.local.vehicle;
     }
 
-    // 如果选中实体改变，重置高亮并更新选中实体
+    if (!nearestEntity) {
+        // 优先级：车辆 > 玩家 > 物体
+
+        // 获取所有车辆
+        const vehicles = alt.Vehicle.all;
+        vehicles.forEach(vehicle => {
+            const distance = getDistance(vehicle);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestEntity = vehicle;
+            }
+        });
+
+        // 获取所有玩家
+        const players = alt.Player.all;
+        players.forEach(player => {
+            if (player.scriptID !== alt.Player.local.scriptID) {
+                const distance = getDistance(player);
+                if (distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestEntity = player;
+                }
+            }
+        });
+
+        // 获取所有物体
+        const objects = alt.Object.all;
+        objects.forEach(object => {
+            const distance = getDistance(object);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestEntity = object;
+            }
+        });
+
+        // 当玩家在车内时，默认选中车辆
+        if (alt.Player.local.vehicle) {
+            nearestEntity = alt.Player.local.vehicle;
+        }
+    }
+
+    // 如果选中实体改变，更新选中实体
     if (nearestEntity !== selectedEntity) {
-        selectedEntity = nearestEntity;
+        selectedEntity = nearestEntity ? { scriptID: nearestEntity.scriptID, type: native.getEntityType(nearestEntity.scriptID) } : null;
     }
 }
 
@@ -86,11 +127,10 @@ function drawMarker(entity) {
     );
 }
 
-
 // 每帧更新选中实体并绘制标记
 alt.everyTick(() => {
     updateSelectedEntity();
-    if ( webview.isSpecificPageOpen('wheelmenu') && selectedEntity) {
+    if (webview.isSpecificPageOpen('wheelmenu') && selectedEntity) {
         drawMarker(selectedEntity);
     }
 });
@@ -116,7 +156,7 @@ alt.on('keydown', (key) => {
         }
 
         if (selectedEntity) {
-            const entityType = native.getEntityType(selectedEntity.scriptID);
+            const entityType = selectedEntity.type;
             let options = [];
             let targetLabel = '';
 
@@ -207,6 +247,8 @@ alt.on('keydown', (key) => {
             currentOptions = options; // 更新当前选项
 
             Rebar.player.useControls().setControls(false);
+
+            alt.setCursorPos({x:0.5, y:0.45},true);
 
             webview.show('wheelmenu', 'page');
             webview.emit('selectedEntity', {

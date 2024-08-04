@@ -113,6 +113,7 @@ function getMenuItemStyle(index: number) {
   text-align: center;
   transition: width 0.3s, height 0.3s;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
 }
 .center.with-description {
   width: 6.25vw;
