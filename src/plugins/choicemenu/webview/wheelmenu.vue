@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useEvents } from '@Composables/useEvents.js';
 
 const event = useEvents();
@@ -8,27 +8,26 @@ interface MenuItem {
   icon: string;
   label: string;
   description: string;
-  action: (player: any, entity: any) => void; // 直接存储操作函数
+  action?: (player: any, entity: any) => void; // 可选操作函数
 }
 
 const menuItems = ref<MenuItem[]>([]);
 const selectedIndex = ref<number | null>(null);
 let selectedEntityId: number | null = null;
+const targetLabel = ref<string>('Target'); // 新增
 
 // 处理客户端传来的实体信息和选项
-event.on('selectedEntity', ({ entityType, entityId, options }) => {
+event.on('selectedEntity', ({ entityType, entityId, options, targetLabel: label }) => {
   selectedEntityId = entityId;
   menuItems.value = options;
+  targetLabel.value = label; // 更新目标标签
 });
 
 function selectItem(index: number) {
   selectedIndex.value = index;
-  const action = menuItems.value[index].action;
 
-  if (typeof action === 'function') {
-    // 向客户端发送事件以执行相应操作
-    event.emitClient('executeAction', { action, entityId: selectedEntityId });
-  }
+  // 向客户端发送事件以执行相应操作
+  event.emitClient('executeAction', { actionIndex: index, entityId: selectedEntityId });
 }
 
 const menuSize = computed(() => {
@@ -52,87 +51,6 @@ function getMenuItemStyle(index: number) {
     height: `${menuItemSize.value}px`,
   };
 }
-
-onMounted(() => {
-  if (menuItems.value.length === 0) {
-    menuItems.value= [{
-    icon: '🔓',
-    label: 'Unlock',
-    description: 'Unlock the vehicle',
-    action: () => alert('Unlocking vehicle...'),
-  },
-  {
-    icon: '🔧',
-    label: 'Start Engine',
-    description: 'Start the vehicle engine',
-    action: () => alert('Starting engine...'),
-  },
-  {
-    icon: '📦',
-    label: 'Open Trunk',
-    description: 'Open the trunk',
-    action: () => alert('Opening trunk...'),
-  },
-  {
-    icon: '🔔',
-    label: 'Horn',
-    description: 'Honk the horn',
-    action: () => alert('Honking horn...'),
-  },
-  {
-    icon: '💡',
-    label: 'Lights',
-    description: 'Turn on the lights',
-    action: () => alert('Turning on lights...'),
-  },
-  {
-    icon: '🛠️',
-    label: 'Repair',
-    description: 'Repair the vehicle',
-    action: () => alert('Repairing...'),
-  },
-  {
-    icon: '🔒',
-    label: 'Lock',
-    description: 'Lock the vehicle',
-    action: () => alert('Locking...'),
-  },
-  {
-    icon: '🛢️',
-    label: 'Refuel',
-    description: 'Refuel the vehicle',
-    action: () => alert('Refueling...'),
-  },
-  {
-    icon: '🧼',
-    label: 'Wash',
-    description: 'Wash the vehicle',
-    action: () => alert('Washing...'),
-  },
-  {
-    icon: '🎶',
-    label: 'Radio',
-    description: 'Turn on the radio',
-    action: () => alert('Turning on radio...'),
-  },
-  {
-    icon: '📱',
-    label: 'Call',
-    description: 'Make a call',
-    action: () => alert('Calling...'),
-  },
-  {
-    icon: '🗺️',
-    label: 'Navigate',
-    description: 'Navigate to a location',
-    action: () => alert('Navigating...'),
-  },
-]
-  }
-    });
-
-
-
 </script>
 
 <template>
@@ -141,7 +59,7 @@ onMounted(() => {
     :style="{ width: menuSize + 'px', height: menuSize + 'px' }"
   >
     <div class="center" :class="{ 'with-description': selectedIndex !== null }">
-      <div>Target</div>
+      <div>{{ targetLabel }}</div> <!-- 修改 -->
       <div v-if="selectedIndex !== null" class="description">
         {{ menuItems[selectedIndex].description }}
       </div>
@@ -164,7 +82,10 @@ onMounted(() => {
 
 <style scoped>
 .radial-menu {
-  position: relative;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(
     circle,
@@ -179,8 +100,8 @@ onMounted(() => {
 }
 .center {
   position: absolute;
-  width: 80px;
-  height: 80px;
+  width: 4.167vw;
+  height: 7.407vh;
   border-radius: 50%;
   background-color: white;
   display: flex;
@@ -194,11 +115,11 @@ onMounted(() => {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 .center.with-description {
-  width: 120px;
-  height: 120px;
+  width: 6.25vw;
+  height: 11.111vh;
 }
 .description {
-  margin-top: 10px;
+  margin-top: 0.926vh;
   font-size: 12px;
   color: black;
 }
@@ -233,12 +154,12 @@ onMounted(() => {
   transition: transform 0.29s, color 0.29s, opacity 0.29s;
 }
 .icon {
-  font-size: 24px;
+  font-size: 2.222vh;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8), -1px -1px 2px rgba(0, 0, 0, 0.8),
     1px -1px 2px rgba(0, 0, 0, 0.8), -1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 .label {
-  font-size: 12px;
+  font-size: 1.111vh;
   color: white;
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);

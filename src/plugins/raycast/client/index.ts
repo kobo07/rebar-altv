@@ -245,6 +245,9 @@ alt.on('keydown', (key) => {
 
 alt.on('keydown', (key) => {
     if (key ===88 ) { // x
+        if(!pos){
+            return
+        }
         native.createObject(alt.hash('prop_big_shit_02'), pos.x, pos.y, pos.z, true, true, true)
         native.drawLine(pos.x, pos.y, pos.z, alt.Player.local.pos.x, alt.Player.local.pos.y,alt.Player.local.pos.z, 255, 255, 255, 255);
         

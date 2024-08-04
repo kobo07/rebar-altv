@@ -1,10 +1,7 @@
 import { useRebarClient } from '@Client/index.js';
 import { useWebview } from '@Client/webview/index.js';
-import { getDirectionFromRotation } from '@Client/utility/math/index.js';
-import { drawText2D, drawText3D } from '@Client/screen/textlabel.js';
 import * as native from 'natives';
 import * as alt from 'alt-client';
-import { BagItem } from '@Plugins/inventory/server/index.js';
 
 const Rebar = useRebarClient();
 const webview = Rebar.webview.useWebview();
@@ -12,6 +9,9 @@ const messenger = Rebar.messenger.useMessenger();
 
 // 用于存储选中的实体
 let selectedEntity = null;
+
+// 用于存储当前选项
+let currentOptions = [];
 
 // 获取玩家与实体的距离
 function getDistance(entity) {
@@ -28,7 +28,9 @@ function getDistance(entity) {
 function updateSelectedEntity() {
     const playerPos = alt.Player.local.pos;
     let nearestEntity = null;
-    let nearestDistance = Infinity;
+    let nearestDistance = 4; // 距离超过4米就不再选中
+
+    // 优先级：车辆 > 玩家 > 物体
 
     // 获取所有车辆
     const vehicles = alt.Vehicle.all;
@@ -62,51 +64,35 @@ function updateSelectedEntity() {
         }
     });
 
-    // 更新选中的实体
+    // 当玩家在车内时，默认选中车辆
+    if (alt.Player.local.vehicle) {
+        nearestEntity = alt.Player.local.vehicle;
+    }
+
+    // 如果选中实体改变，重置高亮并更新选中实体
     if (nearestEntity !== selectedEntity) {
-        resetEntityHighlight(selectedEntity);
         selectedEntity = nearestEntity;
-        highlightEntity(selectedEntity);
     }
 }
 
-// 高亮选中的实体
-function highlightEntity(entity) {
+function drawMarker(entity) {
     if (!entity) return;
-    const entityType = native.getEntityType(entity.scriptID);
-    switch (entityType) {
-        case 1: // 玩家
-            native.setEntityAlpha(entity.scriptID, 150, false);
-            break;
-        case 2: // 车辆
-            native.setVehicleLightMultiplier(entity.scriptID, 1.0);
-            break;
-        case 3: // 物体
-            native.setEntityAlpha(entity.scriptID, 150, false);
-            break;
-    }
+    const entityPos = native.getEntityCoords(entity.scriptID, true);
+
+    // 使用 MarkerTypeChevronUpx1 类型的标记，在实体上方绘制一个标记
+    native.drawMarker(
+        20, entityPos.x, entityPos.y, entityPos.z + 2.5, 0, 0, 0, 0, 180, 0, 0.5, 0.5, 0.5,
+        255, 255, 255, 150, false, true, 2, false, null, null, false
+    );
 }
 
-// 恢复实体的原始状态
-function resetEntityHighlight(entity) {
-    if (!entity) return;
-    const entityType = native.getEntityType(entity.scriptID);
-    switch (entityType) {
-        case 1: // 玩家
-            native.resetEntityAlpha(entity.scriptID);
-            break;
-        case 2: // 车辆
-            native.setVehicleLightMultiplier(entity.scriptID, 0.0);
-            break;
-        case 3: // 物体
-            native.resetEntityAlpha(entity.scriptID);
-            break;
-    }
-}
 
-// 每帧更新选中实体
+// 每帧更新选中实体并绘制标记
 alt.everyTick(() => {
     updateSelectedEntity();
+    if ( webview.isSpecificPageOpen('wheelmenu') && selectedEntity) {
+        drawMarker(selectedEntity);
+    }
 });
 
 // 处理按键事件
@@ -132,112 +118,113 @@ alt.on('keydown', (key) => {
         if (selectedEntity) {
             const entityType = native.getEntityType(selectedEntity.scriptID);
             let options = [];
+            let targetLabel = '';
 
             if (entityType === 2) { // 车辆
+                targetLabel = '载具';
                 const isEngineOn = native.getIsVehicleEngineRunning(selectedEntity.scriptID);
                 const isLocked = native.getVehicleDoorLockStatus(selectedEntity.scriptID) === 2; // 2表示上锁状态
 
                 options.push({
                     icon: '🔒',
-                    label: isLocked ? 'Unlock' : 'Lock',
-                    description: isLocked ? 'Unlock the vehicle' : 'Lock the vehicle',
-                    action: (player, vehicle) => {
-                        if (isLocked) {
-                            native.setVehicleDoorsLocked(vehicle.scriptID, 1); // 解锁
-                        } else {
-                            native.setVehicleDoorsLocked(vehicle.scriptID, 2); // 上锁
-                        }
-                    },
+                    label: isLocked ? '解锁' : '上锁',
+                    description: isLocked ? '解锁车辆' : '锁上车辆',
+                    action: () => {
+                        native.setVehicleDoorsLocked(selectedEntity.scriptID, isLocked ? 1 : 2); // 解锁/上锁
+                    }
                 });
 
                 options.push({
                     icon: '🔧',
-                    label: isEngineOn ? 'Stop Engine' : 'Start Engine',
-                    description: isEngineOn ? 'Stop the vehicle engine' : 'Start the vehicle engine',
-                    action: (player, vehicle) => {
-                        native.setVehicleEngineOn(vehicle.scriptID, !isEngineOn, true, false); // 启动/停止引擎
-                    },
+                    label: isEngineOn ? '熄火' : '启动引擎',
+                    description: isEngineOn ? '熄灭车辆引擎' : '启动车辆引擎',
+                    action: () => {
+                        native.setVehicleEngineOn(selectedEntity.scriptID, !isEngineOn, true, false); // 启动/停止引擎
+                    }
                 });
 
                 options.push({
                     icon: '📦',
-                    label: 'Open Trunk',
-                    description: 'Open the trunk',
-                    action: (player, vehicle) => {
-                        native.setVehicleDoorOpen(vehicle.scriptID, 5, false, false); // 打开后备箱
-                    },
+                    label: '打开后备箱',
+                    description: '打开车辆后备箱',
+                    action: () => {
+                        native.setVehicleDoorOpen(selectedEntity.scriptID, 5, false, false); // 打开后备箱
+                    }
                 });
 
                 options.push({
                     icon: '🛠️',
-                    label: 'Repair',
-                    description: 'Repair the vehicle',
-                    action: (player, vehicle) => {
-                        if (native.isVehicleModel(vehicle.scriptID, alt.hash('JET'))) {
-                            native.setVehicleFixed(vehicle.scriptID); // 修理飞机
-                        } else if (!native.isVehicleModel(vehicle.scriptID, alt.hash('JET'))) {
-                            native.setVehicleFixed(vehicle.scriptID); // 修理其他车辆
-                        } else {
-                            alt.log('You do not have the required skills to repair this aircraft.');
-                        }
-                    },
+                    label: '修理',
+                    description: '修理车辆',
+                    action: () => {
+                        native.setVehicleFixed(selectedEntity.scriptID); // 修理车辆
+                    }
                 });
 
-                // 添加其他选项...
             } else if (entityType === 1) { // 玩家
+                targetLabel = '玩家';
+
                 options.push({
                     icon: '👋',
-                    label: 'Greet',
-                    description: 'Greet the player',
-                    action: (player, targetPlayer) => {
-                        alt.emit('chat:message', `You greeted ${targetPlayer.name}.`);
-                    },
+                    label: '打招呼',
+                    description: '向玩家打招呼',
+                    action: () => {
+                        alt.emit('chat:message', `你向 ${selectedEntity.name} 打了个招呼.`);
+                    }
                 });
 
                 options.push({
                     icon: '💬',
-                    label: 'Send Message',
-                    description: 'Send a private message to the player',
-                    action: (player, targetPlayer) => {
-                        alt.emit('chat:message', `You sent a message to ${targetPlayer.name}.`);
-                    },
+                    label: '发送消息',
+                    description: '发送私人消息给玩家',
+                    action: () => {
+                        alt.emit('chat:message', `你向 ${selectedEntity.name} 发送了一条消息.`);
+                    }
                 });
 
-                // 添加其他选项...
             } else if (entityType === 3) { // 物体
+                targetLabel = '物体';
+
                 options.push({
                     icon: '🔄',
-                    label: 'Rotate',
-                    description: 'Rotate the object',
-                    action: (player, object) => {
-                        native.setEntityHeading(object.scriptID, native.getEntityHeading(object.scriptID) + 90);
-                    },
+                    label: '旋转',
+                    description: '旋转物体',
+                    action: () => {
+                        native.setEntityHeading(selectedEntity.scriptID, native.getEntityHeading(selectedEntity.scriptID) + 90);
+                    }
                 });
 
                 options.push({
                     icon: '❌',
-                    label: 'Remove',
-                    description: 'Remove the object',
-                    action: (player, object) => {
-                        native.deleteObject(object.scriptID);
-                    },
+                    label: '移除',
+                    description: '移除物体',
+                    action: () => {
+                        native.deleteObject(selectedEntity.scriptID);
+                    }
                 });
-
-                // 添加其他选项...
             }
+
+            currentOptions = options; // 更新当前选项
+
+            Rebar.player.useControls().setControls(false);
 
             webview.show('wheelmenu', 'page');
             webview.emit('selectedEntity', {
                 entityType,
                 entityId: selectedEntity.scriptID,
-                options,
+                options: options.map(option => ({
+                    icon: option.icon,
+                    label: option.label,
+                    description: option.description
+                })), // 只发送可序列化的数据
+                targetLabel,
             });
         }
     }
 });
 
 // 监听 Webview 发出的事件并执行相应操作
-webview.on('executeAction', ({ action, entityId }) => {
+webview.on('executeAction', ({ actionIndex, entityId }) => {
     const player = alt.Player.local;
     let entity = null;
 
@@ -252,7 +239,10 @@ webview.on('executeAction', ({ action, entityId }) => {
 
     if (!entity) return;
 
-    if (typeof action === 'function') {
-        action(player, entity);
+    if (currentOptions[actionIndex] && typeof currentOptions[actionIndex].action === 'function') {
+        currentOptions[actionIndex].action(player, entity);
     }
+
+    webview.hide('wheelmenu');
+    Rebar.player.useControls().setControls(true);
 });
