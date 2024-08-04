@@ -15,11 +15,10 @@ function useNotificationAPI() {
             icon: '❗',
             title: '通知',
             subTitle: '',
-            message
+            message,
         }
-            
-            addNotification(player, notification);
-        }
+        addNotification(player, notification);
+    }
 
 
     function type() {

@@ -85,8 +85,8 @@ export interface Faction {
     states?: State[];
 }
 
-/*const SyncedBinder = Rebar.systems.useStreamSyncedBinder();
-SyncedBinder.syncCharacterKey('job');*/
+const SyncedBinder = Rebar.systems.useStreamSyncedBinder();
+SyncedBinder.syncCharacterKey('job');
 
 /**
  * 在玩家创建角色后给予背包的文档参数

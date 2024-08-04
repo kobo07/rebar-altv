@@ -5,6 +5,7 @@ import './api.js';
 
 import { ChatConfig } from '../shared/config.js';
 import { ChatEvents } from '../shared/events.js';
+import { Character } from '@Shared/types/character.js';
 
 const Rebar = useRebar();
 const messenger = Rebar.messenger.useMessenger();
@@ -36,8 +37,21 @@ messenger.message.on(handlePlayerMessage);
 
 const api = Rebar.useApi();
 
-// Ideally you only want to show the chat, after the player has fully logged in
-alt.on('playerConnect', async (player) => {
+
+/*alt.on('playerConnect', async (player) => {
+   const chat = await api.getAsync('chat-api');
+    chat.show(player);
+
+
+    const isChatting = chat.isChatting(player);
+
+
+    chat.onChatStatusChange((player, isCurrentlyChatting) => {});
+});*/
+
+
+
+Rebar.events.useEvents().on('character-bound', async (player: alt.Player, document: Character) => {
     const chat = await api.getAsync('chat-api');
     chat.show(player);
 

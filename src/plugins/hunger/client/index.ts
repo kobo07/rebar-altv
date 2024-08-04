@@ -27,7 +27,7 @@ function starthungerinterval() {
             food -= FOOD_DECREMENT;
         } else {
             food = 0;
-            alt.emitServer( 'hunger:hurt', 'food');
+            alt.emitServer('hunger:hurt', 'food');
         }
 
         if (water > WATER_DECREMENT) {
@@ -37,16 +37,31 @@ function starthungerinterval() {
             alt.emitServer('hunger:hurt', 'water');
         }
 
-        if (shit < 100 - SHIT_INCREMENT && food > FOOD_DECREMENT ) {
+        if (shit < 100 - SHIT_INCREMENT && food > FOOD_DECREMENT) {
             shit += SHIT_INCREMENT;
-        } 
-        if(shit > 100 - SHIT_INCREMENT)  {
+        }
+        if (shit > 100 - SHIT_INCREMENT) {
             alt.emitServer('hunger:shit');
         }
-    
-        alt.emitServer( 'hunger:update', food, water, shit);
-        
+
+        alt.emitServer('hunger:update', food, water, shit);
+
     }, HUNGER_INTERVAL);
 }
 
 
+
+
+alt.setInterval(() => {
+    const food = alt.Player.local.getStreamSyncedMeta('food') as number;
+    const water = alt.Player.local.getStreamSyncedMeta('water') as number;
+    const health = alt.Player.local.health
+
+    if (food < 21 || water < 21  || health < 119) {
+        native.disableControlAction(0, 21, true); //Disable Sprint
+    }
+    else{
+        native.disableControlAction(0, 21, false); //Enable Sprint
+    }
+
+}, 50)

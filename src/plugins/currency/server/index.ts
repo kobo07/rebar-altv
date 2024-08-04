@@ -222,7 +222,7 @@ import atm from '../shared/atm.js';
 atm.forEach((atm, index) => {
     const atmId = index + 1; // 动态生成ATM的ID，从1开始
 
-    const atminter = Rebar.controllers.useInteraction(new alt.ColshapeCylinder(atm.x, atm.y, atm.z, 5, 2), 'player');
+    const atminter = Rebar.controllers.useInteraction(new alt.ColshapeCylinder(atm.x, atm.y, atm.z, 5, 2), 'any');
 
     atminter.onEnter(async (player: alt.Player, colshape: alt.Colshape, uid: string) => {
         if (!player) {

@@ -19,7 +19,7 @@
         </div>
         <div class="mt-2">
             <p class="text-gray-200">{{ notificationProp.subTitle }}</p>
-            <p class="text-gray-300">{{ notificationProp.message }}</p>
+            <p class="text-gray-300"  :style="{ color: notificationProp.color }" >{{ notificationProp.message }}</p>
         </div>
     </div>
 
@@ -43,7 +43,7 @@
         </div>
         <div class="mt-2">
             <p class="text-black">{{ notificationProp.subTitle }}</p>
-            <p class="text-gray-700">{{ notificationProp.message }}</p>
+            <p class="text-gray-700"   :style="{ color: notificationProp.color }"  >{{ notificationProp.message }}</p>
         </div>
     </div>
 </template>

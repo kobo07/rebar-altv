@@ -26,8 +26,6 @@
       <li @click="handleCustomOption">自定义选项</li>
     </ul>
   </div>
-
-  <p>{{ mes }}</p>
 </template>
 
 <script lang="ts" setup>
@@ -36,10 +34,16 @@ import { useEvents } from '@Composables/useEvents.js';
 import { findIcon } from './findicon.js'; // 调整路径
 import { BagItem } from '../server/index.js';
 import Draggable from '../../../../webview/src/components/Draggable.vue';
+//import { useInventory } from './stats.js';
 
-const mes = ref('');
 const event = useEvents();
 
+/*const {
+ inventory
+} = useInventory();*/
+
+//computed 抓inventory
+//const characterInventory =  computed(() => inventory.value);
 
 const characterInventory = ref<BagItem[]>([]);
 const backpackSlots = ref<number[]>([]);
@@ -63,24 +67,18 @@ function handleDrag(from_id: string, to_id: string) {
 
   changeitemslot(fromSlot, toSlot);
 
-  mes.value = `drag: ${from_id} to ${to_id}`;
-
 }
 
 function handleClick(id: string) {
-  mes.value = `left-click: ${id}`;
 }
 
 function handleDoubleClick(id: string) {
-  mes.value = `dbl-click: ${id}`;
 }
 
 function handleMiddleClick(id: string) {
-  mes.value = `middle-click: ${id}`;
 }
 
 function handleRightClick(id: string) {
-  mes.value = `right-click: ${id}`;
   selectedSlot.value = parseInt(id.replace('slot-', ''), 10);
   const item = characterInventory.value.find(item => item.slot === selectedSlot.value);
   if (!item) {
@@ -138,29 +136,28 @@ function getInventoryItem(slot: number) {
   return characterInventory.value.find(item => item.slot === slot) || null;
 }
 
+
+event.on('inventory:sync', (data: BagItem[]) => {
+  characterInventory.value = data;
+});
+
 onMounted(() => {
-  event.emitServer('GetInventory');
-
-  if (characterInventory.value ) {
-
-  } else {
-    characterInventory.value =
-      [
-        { icon: 'sword.png', name: '剑', quantity: 1, weight: 1, slot: 0, type: '武器', desc: '剑是一把拥有强大力量的武器。', maxStack: 1, totalWeight: 1 },
-        { icon: 'rubik.png', name: '魔方', quantity: 1, weight: 1, slot: 1, type: '武器', desc: '头盔是用来保护头部的装备。', maxStack: 1, totalWeight: 1 },
-        { icon: 'iron-ore.png', name: '铁矿', quantity: 1, weight: 1, slot: 2, type: '武器', desc: '头盔是用来保护头部的装备。', maxStack: 1, totalWeight: 1 },
-      ];
-  }
-
+  event.emitServer('getinventory');
   // 假设背包有50个槽位
   const totalSlots = 50;
   backpackSlots.value = Array.from({ length: totalSlots }, (_, index) => index);
+
+  // 如果inventory没有值，则初始化示例数据
+  if (characterInventory.value.length === 0) {
+    characterInventory.value.push(
+      { icon: 'sword.png', name: '剑', quantity: 1, weight: 1, slot: 0, type: '武器', desc: '剑是一把拥有强大力量的武器。', maxStack: 1, totalWeight: 1 },
+      { icon: 'rubik.png', name: '魔方', quantity: 1, weight: 1, slot: 1, type: '武器', desc: '头盔是用来保护头部的装备。', maxStack: 1, totalWeight: 1 },
+      { icon: 'iron-ore.png', name: '铁矿', quantity: 1, weight: 1, slot: 2, type: '武器', desc: '头盔是用来保护头部的装备。', maxStack: 1, totalWeight: 1 }
+    );
+  }
 });
 
-event.on('sendinventory', (inventory: BagItem[]) => {
-  characterInventory.value = inventory;
-}
-)
+
 
 const getIconPath = (iconName: string) => {
   return findIcon(iconName);
@@ -192,6 +189,7 @@ const getIconPath = (iconName: string) => {
 .inventory-item:hover {
   border: 2px solid rgba(21, 102, 153, 0.8);
   background-color: rgba(0, 0, 0, 0.7);
+  transform: translateY(-5px);
 }
 
 .item-box {

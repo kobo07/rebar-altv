@@ -20,6 +20,32 @@ SyncedBinder.syncCharacterKey('inventory')
 SyncedBinder.syncCharacterKey('capacity')
 SyncedBinder.syncCharacterKey('allWeightInBag')*/
 
+alt.onClient('inventory:open', (player) => {
+    player.setMeta('isInventoryOpen', true);
+})
+
+alt.onClient('inventory:close', (player) => {
+    player.setMeta('isInventoryOpen', false);
+})
+
+
+/*Rebar.events.useEvents().on('character-bound', (player: alt.Player, document: Character) => {
+    const inventory = document.inventory;
+    alt.emitClient(player, 'inventory:sync', inventory);
+});*/
+
+Rebar.document.character.useCharacterEvents().on('inventory', (player, newValue, oldValue) => {
+    if(player.getMeta('isInventoryOpen')) {
+   // alt.emitClient(player, 'inventory:sync', newValue);
+    Rebar.player.useWebview(player).emit('inventory:sync', newValue);
+    }
+}
+);
+
+alt.onClient('getinventory', (player) => {
+    const inventory = Rebar.document.character.useCharacter(player).getField('inventory');
+    Rebar.player.useWebview(player).emit('inventory:sync', inventory);
+});
 
 
 declare global {
@@ -37,13 +63,13 @@ declare module '@Shared/types/character.js' {
     }
 }
 
-declare module 'alt-shared' {
+/*declare module 'alt-shared' {
     export interface ICustomEntityStreamSyncedMeta {
         inventory?: BagItem[];
         capacity?: number;
         allWeightInBag?: number;
     }
-}
+}*/
 
 
 
@@ -51,7 +77,7 @@ type ItemType = '武器' | '消耗品' | '材料' | '工具' | '钥匙' | '衣�
 
 type EffectCallback = (player: alt.Player, ...args: any[]) => void;
 
-interface BaseItem {
+export interface BaseItem {
     name: string;
     icon: string;
     desc: string;
@@ -231,16 +257,21 @@ type InventoryParams = {
     characterId?: number;
 };
 
+
 async function sendInventoryNotification(player: alt.Player, itemName: string, quantity: number, operation: string) {
     const notify = await Rebar.useApi().getAsync('ascended-notification-api');
+    const message = operation === 'add'
+        ? `你获得了 ${quantity} 个 ${itemName}`
+        : `你失去了 ${quantity} 个 ${itemName}`;
+
     notify.create(player, {
         icon: '🎒',
         title: '库存',
         subTitle: '物品变动',
-        message: operation === 'add' ? `你获得了 ${quantity} 个 ${itemName} `
-            : `你失去了 ${quantity} 个 ${itemName}。`,
+        message: message,
     });
 }
+
 
 function useInventory() {
     async function getInventory(params: InventoryParams): Promise<BagItem[] | null> {
@@ -293,31 +324,31 @@ function useInventory() {
 
     async function addItem(itemName: string, quantity: number, params: InventoryParams, customData?: any) {
         const { storage, player, characterId } = params;
-    
+
         if (!player && !storage && !characterId) {
             console.warn('Either player, storage, or characterId must be provided.');
             return;
         }
-    
+
         const item = await useApi().getitem(itemName);
         if (!item) {
             console.warn('Item not found.');
             return;
         }
-    
+
         const inventory = await getInventory(params);
         if (!inventory) {
-            console.warn('Inventory not found.');
+            updateInventory([], params);
             return;
         }
-    
+
         // 计算当前库存的总权重
         let currentWeight = inventory.reduce((total, i) => total + i.totalWeight, 0);
         const itemWeight = item.weight * quantity;
-    
-        // 根据参数是否包含player, storage或characterId来确定容量
+
+        // 根据参数是否包含 player, storage 或 characterId 来确定容量
         let capacity: number;
-    
+
         if (player) {
             capacity = Rebar.document.character.useCharacter(player).getField('capacity');
         } else if (storage) {
@@ -340,18 +371,18 @@ function useInventory() {
             console.warn('Capacity source not found.');
             return;
         }
-    
+
         // 检查添加的项目是否超出容量
         if (currentWeight + itemWeight > capacity) {
             console.warn('Not enough capacity.');
             return;
         }
-    
+
         let remainingQuantity = quantity;
-    
+
         while (remainingQuantity > 0) {
             const index = inventory.findIndex(i => i.name === itemName && (i.customData ? i.customData === customData : true) && i.quantity < item.maxStack);
-    
+
             if (index !== -1) {
                 const spaceAvailable = item.maxStack - inventory[index].quantity;
                 if (remainingQuantity <= spaceAvailable) {
@@ -365,17 +396,24 @@ function useInventory() {
                 }
             } else {
                 const quantityToAdd = Math.min(remainingQuantity, item.maxStack);
+
+                // 找到下一个可用的 slot
+                let nextSlot = 0;
+                while (inventory.find(i => i.slot === nextSlot)) {
+                    nextSlot++;
+                }
+
                 inventory.push({
                     ...item,
                     quantity: quantityToAdd,
-                    slot: inventory.length,
+                    slot: nextSlot,
                     customData: customData,
                     totalWeight: quantityToAdd * item.weight
                 });
                 remainingQuantity -= quantityToAdd;
             }
         }
-    
+
         currentWeight = inventory.reduce((total, i) => total + i.totalWeight, 0);
         if (player) {
             Rebar.document.character.useCharacter(player).set('allWeightInBag', currentWeight);
@@ -386,28 +424,29 @@ function useInventory() {
                 await db.update({ _id, allWeightInBag: currentWeight }, CollectionNames.Characters);
             }
         }
-    
+
         await updateInventory(inventory, params);
-    
+
         if (player) {
             await sendInventoryNotification(player, itemName, quantity, 'add');
         }
     }
-    
+
+
     async function subItem(itemName: string, quantity: number, params: InventoryParams, slot?: number) {
         const { storage, player, characterId } = params;
-    
+
         if (!player && !storage && !characterId) {
             console.warn('Either player, storage, or characterId must be provided.');
             return;
         }
-    
+
         const inventory = await getInventory(params);
         if (!inventory) {
             console.warn('Inventory not found.');
             return;
         }
-    
+
         if (slot !== undefined) {
             // 针对指定的slot处理
             const index = inventory.findIndex((i) => i.slot === slot && i.name === itemName);
@@ -415,12 +454,12 @@ function useInventory() {
                 console.warn('Item not found in the specified slot.');
                 return;
             }
-    
+
             if (inventory[index].quantity < quantity) {
                 console.warn('Not enough quantity in the specified slot.');
                 return;
             }
-    
+
             inventory[index].quantity -= quantity;
             inventory[index].totalWeight = inventory[index].quantity * inventory[index].weight;
             if (inventory[index].quantity <= 0) {
@@ -430,15 +469,15 @@ function useInventory() {
             // 处理没有指定slot的情况
             let remainingQuantity = quantity;
             const items = inventory.filter((i) => i.name === itemName).sort((a, b) => a.quantity - b.quantity);
-    
+
             if (items.reduce((acc, item) => acc + item.quantity, 0) < quantity) {
                 console.warn('Not enough quantity in the inventory.');
                 return;
             }
-    
+
             for (const item of items) {
                 if (remainingQuantity <= 0) break;
-    
+
                 if (item.quantity > remainingQuantity) {
                     item.quantity -= remainingQuantity;
                     item.totalWeight = item.quantity * item.weight;
@@ -449,7 +488,7 @@ function useInventory() {
                     item.totalWeight = 0;
                 }
             }
-    
+
             // 移除数量为0的项
             for (let i = inventory.length - 1; i >= 0; i--) {
                 if (inventory[i].quantity <= 0) {
@@ -457,7 +496,7 @@ function useInventory() {
                 }
             }
         }
-    
+
         const currentWeight = inventory.reduce((total, i) => total + i.totalWeight, 0);
         if (player) {
             Rebar.document.character.useCharacter(player).set('allWeightInBag', currentWeight);
@@ -468,14 +507,14 @@ function useInventory() {
                 await db.update({ _id, allWeightInBag: currentWeight }, CollectionNames.Characters);
             }
         }
-    
+
         await updateInventory(inventory, params);
-    
+
         if (player) {
             await sendInventoryNotification(player, itemName, quantity, 'sub');
         }
     }
-    
+
 
 
 
@@ -511,19 +550,19 @@ function useInventory() {
         const rentDuration = 7 * 24 * 60 * 60 * 1000; // 一周的毫秒数
         const endTime = Date.now() + rentDuration;
 
-       const trycost = await currency.cost({ player: rentplayer }, price);
-       if(!trycost){
+        const trycost = await currency.cost({ player: rentplayer }, price);
+        if (!trycost) {
             return;
-       }
+        }
 
-       if(storagedata[0].belongsTo.characterid){
-        const owner = await db.getMany<{ _id: string } & Character>({ id: storagedata[0].belongsTo.characterid }, CollectionNames.Characters);
-        if(owner.length > 0){
-           currency.add({characterId: owner[0].id},'bank', price);
-        }  
-       }
+        if (storagedata[0].belongsTo.characterid) {
+            const owner = await db.getMany<{ _id: string } & Character>({ id: storagedata[0].belongsTo.characterid }, CollectionNames.Characters);
+            if (owner.length > 0) {
+                currency.add({ characterId: owner[0].id }, 'bank', price);
+            }
+        }
 
-   
+
 
         db.update({ _id: storagedata[0]._id, isrent: { starttime: Date.now(), endtime: endTime, isrent: true, rentmanid: Rebar.document.character.useCharacter(rentplayer).getField('id') } }, 'storage');
     }
@@ -572,11 +611,16 @@ useApi().createitem({
 
 
 
-Rebar.useKeybinder().on(82, (player) => {//R
-    useInventory().addItem('大剑', 1, { player: player });
-    useInventory().addItem('魔方', 1, { player: player });
+Rebar.useKeybinder().on(82, async (player) => {//R
+    await useInventory().addItem('大剑', 5, { player: player });
+    await useInventory().addItem('魔方', 5, { player: player });
 })
 
+
+Rebar.useKeybinder().on(83, async (player) => {//S
+    await useInventory().subItem('大剑', 5, { player: player });
+    await useInventory().subItem('魔方', 5, { player: player });
+})
 
 
 
@@ -602,14 +646,12 @@ alt.onClient('changeitemslot', async (player: alt.Player, fromSlot: number, toSl
     if (!toItem) {
         fromItem.slot = toSlot;
         await useInventory().updateInventory(inventory, { player: player });
-        sendinventory(player);
         return;
     }
 
     fromItem.slot = toSlot;
     toItem.slot = fromSlot;
     await useInventory().updateInventory(inventory, { player: player });
-    sendinventory(player);
 });
 
 
@@ -617,18 +659,13 @@ alt.onClient('changeitemslot', async (player: alt.Player, fromSlot: number, toSl
 
 
 
-alt.onClient('GetInventory', async (player: alt.Player) => {
-    const inventory = await useInventory().getInventory({ player: player });
-    if (!inventory) {
-        return;
-    }
-    Rebar.player.useWebview(player).emit('sendinventory', inventory);
+
+
+Rebar.messenger.useMessenger().commands.register({
+    name: '/clearinventory',
+    desc: '清空你的背包',
+    callback: async (player: alt.Player) => {
+        useInventory().updateInventory([], { player: player });
+    },
 });
 
-async function sendinventory(player: alt.Player) {
-    const inventory = await useInventory().getInventory({ player: player });
-    if (!inventory) {
-        return;
-    }
-    Rebar.player.useWebview(player).emit('sendinventory', inventory);
-}

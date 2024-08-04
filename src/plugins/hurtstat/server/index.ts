@@ -31,16 +31,26 @@ export interface DamageRecord {
 }
 
 
-declare module 'alt-shared' {
+/*declare module 'alt-shared' {
     export interface ICustomEntityStreamSyncedMeta {
         hurt?: number;
     }
+}*/
+
+
+
+/*const SyncedBinder = Rebar.systems.useStreamSyncedBinder();
+SyncedBinder.syncCharacterKey('hurt')*/
+
+/*Rebar.events.useEvents().on('character-bound', (player: alt.Player, document: Character) => {
+    const hurt = document.hurt;
+    alt.emitClient(player, 'hurt:sync', hurt);
+});
+
+Rebar.document.character.useCharacterEvents().on('hurt', (player, newValue, oldValue) => {
+    alt.emitClient(player, 'hurt:sync', newValue);
 }
-
-
-
-const SyncedBinder = Rebar.systems.useStreamSyncedBinder();
-SyncedBinder.syncCharacterKey('hurt')
+);*/
 
 
 /**
@@ -62,7 +72,6 @@ charSelectApi.onCreate(givecharacterdefaultdata);
 
 
 
-
 const environment = {
     fire: { hash: 615608432, description: '火焰烧伤' },
     rocketExplosion: { hash: 883325847, description: '火箭筒爆炸伤' },
@@ -76,9 +85,6 @@ const environment = {
     bulletproofTire: { hash: 2741846334, description: '防弹轮胎伤害' },
     animal: { hash: 148160082, description: '动物攻击伤' }
 };
-
-
-
 
 alt.on('playerDamage', async (victim: alt.Player, attacker: alt.Entity, healthDamage: number, armourDamage: number, weaponHash: number) => {
     if (healthDamage <= 1) {
@@ -98,6 +104,10 @@ alt.on('playerDamage', async (victim: alt.Player, attacker: alt.Entity, healthDa
 
     if (attacker instanceof alt.Player) {
         attackerType = victim === attacker ? '自残' : '被人打了';
+        const envHash = Object.values(environment).find(env => env.hash === weaponHash);
+        if (envHash) {
+            attackerTypeDescription = envHash.description;
+        }
     } else if (attacker instanceof alt.Vehicle) {
         attackerType = '交通事故';
     } else if (attacker instanceof alt.Object || attacker === null) {
@@ -105,13 +115,18 @@ alt.on('playerDamage', async (victim: alt.Player, attacker: alt.Entity, healthDa
         if (envHash) {
             attackerType = '环境伤害';
             attackerTypeDescription = envHash.description;
+        } else if (weaponHash === 0 && healthDamage === 8) {
+            attackerType = '溺水';
         } else {
-            attackerType = '未知伤害';
+            attackerType = '可能是低血糖';
         }
     } else {
         alt.log('未知:', attacker, attackerType, healthDamage, armourDamage, weaponHash);
         return;
     }
+
+    console.log(attackerType, healthDamage, armourDamage, weaponHash);
+
 
     if (weaponHash) {
         const smallCaliberHandguns = [
@@ -133,7 +148,7 @@ alt.on('playerDamage', async (victim: alt.Player, attacker: alt.Entity, healthDa
             3219281620, // Pistol Mk II
             2285322324 // SNS Pistol Mk II
         ];
-        
+
         const shotguns = [
             487013001, // Pump Shotgun
             2017895192, // Sawn-Off Shotgun
@@ -146,7 +161,7 @@ alt.on('playerDamage', async (victim: alt.Player, attacker: alt.Entity, healthDa
             317205821, // Sweeper Shotgun
             94989220 // Combat Shotgun
         ];
-        
+
         const rifles = [
             3220176749, // Assault Rifle
             2210333304, // Carbine Rifle
@@ -160,7 +175,7 @@ alt.on('playerDamage', async (victim: alt.Player, attacker: alt.Entity, healthDa
             2636060646, // Military Rifle
             2526821735 // Special Carbine Mk II
         ];
-        
+
         const blades = [
             2578778090, // Knife
             1737195953, // Nightstick
@@ -176,13 +191,13 @@ alt.on('playerDamage', async (victim: alt.Player, attacker: alt.Entity, healthDa
             2484171525, // Pool Cue
             940833800 // Stone Hatchet
         ];
-        
+
         const bluntWeapons = [
             2227010557, // Crowbar
             2460120199, // Bat
             1141786504 // Golf Club
         ];
-        
+
         const explosives = [
             2481070269, // Grenade
             2726580491, // Sticky Bomb
@@ -195,11 +210,11 @@ alt.on('playerDamage', async (victim: alt.Player, attacker: alt.Entity, healthDa
             4256991824, // Tear Gas
             741814745 // Jerry Can
         ];
-        
+
         const unarmed = [
             2725352035 // Unarmed
         ];
-        
+
 
         if (smallCaliberHandguns.includes(weaponHash)) {
             attackerTypeDescription = '小口径手枪弹贯穿伤';
@@ -260,7 +275,7 @@ function useApi() {
     }
 
     async function add(player: alt.Player, healthDamage: number, attackerType: string, attackerTypeDescription: string,) {
-        
+
         const oldHurt = await get(player)
         if (!oldHurt) {
             return false
@@ -301,7 +316,7 @@ function useApi() {
         return set(player, newHurt)
     }
 
-    async function allcure (player: alt.Player) {
+    async function allcure(player: alt.Player) {
         const oldHurt = await get(player)
         if (!oldHurt) {
             return false
@@ -336,13 +351,7 @@ Rebar.useApi().register('hurt-api', useApi());
 
 Keybinder.on(113, (player) => {
     const ped = Rebar.controllers.usePed(new alt.Ped('mp_m_freemode_01', player.pos, alt.Vector3.zero, 100));
-    const ped1 =new alt.Ped('mp_m_freemode_01', player.pos, alt.Vector3.zero, 100)
-
-    const scriptID = player.getMeta('scriptid') as number
-
-    ped.invoke('taskShootAtEntity',scriptID,10000,0xC6EE6B4C)
-
-
+    const ped1 = new alt.Ped('mp_m_freemode_01', player.pos, alt.Vector3.zero, 100)
 
     ped1.currentWeapon = alt.hash('pistol50')
 

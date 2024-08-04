@@ -5,4 +5,5 @@ export interface Notification {
     message: string;
     duration?: number;
     oggFile?: string;
+    color?: string;
 }

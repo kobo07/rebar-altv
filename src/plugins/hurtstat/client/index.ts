@@ -5,6 +5,7 @@ import { drawText2D, drawText3D } from '@Client/screen/textlabel.js';
 import * as native from 'natives';
 import * as alt from 'alt-client';
 import { bodyPartToBoneId } from '../shared/config.js';
+import { DamageRecord } from '../server/index.js';
 
 const Rebar = useRebarClient();
 const webview = Rebar.webview.useWebview();
@@ -56,3 +57,21 @@ alt.on('weaponDamage', (target: alt.Entity, weaponHash: number, damage: number, 
 */
 
 alt.Player.local.setMeta('scriptid',alt.Player.local.scriptID);
+
+
+/*
+let hur: DamageRecord[] = [];
+
+alt.onServer('hurt:sync', (hurt: DamageRecord[]) => {
+    hur = hurt
+})
+
+const view = useWebview();
+function update() {
+    const stats: DamageRecord[] = hur;
+    view.emit('sendhur', stats);
+}
+
+alt.setInterval(update, 50);
+*/
+

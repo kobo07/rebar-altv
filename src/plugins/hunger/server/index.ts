@@ -50,28 +50,31 @@ event.on('character-bound', starthunger);
 
 
 alt.onClient('hunger:hurt', async (player: alt.Player, type: string) => {
-    const hurtapi = await Rebar.useApi().getAsync('hurt-api');
 
     if (type === 'food') {
-        if (player.health <= 109) {
+        if(player.health <= 99) {
+            return
+        }
+        else if (player.health <= 109) {
             player.health = 99;
             Rebar.usePlayer(player).notify.showNotification('饿啊！！');
             return;
         }
         player.health -= 10;
         Rebar.usePlayer(player).notify.showNotification('你感到饥饿');
-        await hurtapi.add(player, 10, '健康状态异常', '饥饿');
     }
 
     if (type === 'water') {
-        if (player.health <= 109) {
+        if(player.health <= 99) {
+            return
+        }
+        else if (player.health <= 109) {
             player.health = 99;
             Rebar.usePlayer(player).notify.showNotification('渴啊！！');
             return;
         }
         player.health -= 10;
         Rebar.usePlayer(player).notify.showNotification('你感觉很渴');
-        await hurtapi.add(player, 10, '健康状态异常', '缺水');
     }
 });
 
@@ -112,16 +115,18 @@ export function shit(player: alt.Player, toliet?: boolean) {
 const Keybinder = Rebar.useKeybinder();
 
 // 75 - k
-Keybinder.on(75, (player) => {
+Keybinder.on(75, async (player) => {
+
+    const hurt = await Rebar.useApi().getAsync('hurt-api')
+
+    hurt.allcure(player);
+
     shit(player);
     player.health = 200;
     player.spawn(player.pos.x, player.pos.y, player.pos.z)
 
     useApi().add(player, 'food', 100);
     useApi().add(player, 'water', 100);
-
-    const newcar = new alt.Vehicle('buzzard', player.pos.x + 10, player.pos.y, player.pos.z, 0, 0, 0);
-
 });
 
 // 76 - l
