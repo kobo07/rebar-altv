@@ -66,12 +66,15 @@ function givecharacterdefaultdata(player: alt.Player) {
 
 // 玩家创建角色时触发
 const api = Rebar.useApi();
-const charSelectApi = api.get('character-creator-api');
+const charSelectApi = await api.getAsync('character-creator-api');
 charSelectApi.onCreate(givecharacterdefaultdata);
 
 
 
 
+
+
+/*
 const environment = {
     fire: { hash: 615608432, description: '火焰烧伤' },
     rocketExplosion: { hash: 883325847, description: '火箭筒爆炸伤' },
@@ -248,7 +251,7 @@ alt.on('playerDamage', async (victim: alt.Player, attacker: alt.Entity, healthDa
     await useApi().set(victim, allAttackLabel);
 });
 
-
+*/
 
 
 
@@ -348,11 +351,3 @@ Rebar.useApi().register('hurt-api', useApi());
 
 
 
-
-Keybinder.on(113, (player) => {
-    const ped = Rebar.controllers.usePed(new alt.Ped('mp_m_freemode_01', player.pos, alt.Vector3.zero, 100));
-    const ped1 = new alt.Ped('mp_m_freemode_01', player.pos, alt.Vector3.zero, 100)
-
-    ped1.currentWeapon = alt.hash('pistol50')
-
-})

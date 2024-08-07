@@ -88,3 +88,14 @@ alt.onRpc('startAnimation', async (prop: alt.Object) => {
 
     return true;
 });
+
+
+
+
+
+
+
+
+//native.beginTextCommandPrint('STRING');
+//native.addTextComponentSubstringPlayerName('Hello, world!');
+//native.endTextCommandPrint(100000, true);

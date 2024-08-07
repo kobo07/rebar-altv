@@ -53,7 +53,7 @@ async function init() {
     await alt.Utils.waitFor(() => api.isReady('character-creator-api'), 30000);
 
     // Get the API
-    const charSelectApi = api.get('character-creator-api');
+    const charSelectApi = await api.getAsync('character-creator-api');
 
     // Hook in your event
     charSelectApi.onCreate(handleCharacterCreated);

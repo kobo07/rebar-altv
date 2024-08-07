@@ -6,6 +6,8 @@ const Rebar = useRebar();
 let isUpdatingVehicles = false;
 let isUpdatingPlayers = false;
 
+
+
 function updatePlayers() {
     if (isUpdatingPlayers) {
         return;
@@ -60,3 +62,7 @@ function updateVehicles() {
 
 alt.setInterval(updatePlayers, 5000);
 alt.setInterval(updateVehicles, 5000);
+
+
+
+

@@ -15,10 +15,10 @@ db.createCollection('storage');
 
 
 
-/*const SyncedBinder = Rebar.systems.useStreamSyncedBinder();
-SyncedBinder.syncCharacterKey('inventory')
+const SyncedBinder = Rebar.systems.useStreamSyncedBinder();
+//SyncedBinder.syncCharacterKey('inventory')
 SyncedBinder.syncCharacterKey('capacity')
-SyncedBinder.syncCharacterKey('allWeightInBag')*/
+SyncedBinder.syncCharacterKey('allWeightInBag')
 
 alt.onClient('inventory:open', (player) => {
     player.setMeta('isInventoryOpen', true);
@@ -63,13 +63,12 @@ declare module '@Shared/types/character.js' {
     }
 }
 
-/*declare module 'alt-shared' {
+declare module 'alt-shared' {
     export interface ICustomEntityStreamSyncedMeta {
-        inventory?: BagItem[];
         capacity?: number;
         allWeightInBag?: number;
     }
-}*/
+}
 
 
 
@@ -243,7 +242,7 @@ function givecharacterdefaultdata(player: alt.Player) {
 
 // 玩家创建角色时触发
 const api = Rebar.useApi();
-const charSelectApi = api.get('character-creator-api');
+const charSelectApi = await api.getAsync('character-creator-api');
 charSelectApi.onCreate(givecharacterdefaultdata);
 
 
@@ -660,12 +659,4 @@ alt.onClient('changeitemslot', async (player: alt.Player, fromSlot: number, toSl
 
 
 
-
-Rebar.messenger.useMessenger().commands.register({
-    name: '/clearinventory',
-    desc: '清空你的背包',
-    callback: async (player: alt.Player) => {
-        useInventory().updateInventory([], { player: player });
-    },
-});
 

@@ -116,13 +116,12 @@ const Keybinder = Rebar.useKeybinder();
 
 // 75 - k
 Keybinder.on(75, async (player) => {
-    const hurt = await Rebar.useApi().getAsync('hurt-api')
-    hurt.allcure(player);
     shit(player);
     player.health = 200;
     player.spawn(player.pos.x, player.pos.y, player.pos.z)
     useApi().add(player, 'food', 100);
     useApi().add(player, 'water', 100);
+    alt.log(`{x:${player.pos.x}, y:${player.pos.y}, z:${player.pos.z}}`);
 });
 
 
@@ -133,38 +132,6 @@ Keybinder.on(78, (player) => {
     player.giveWeapon(584646201, 1000, true);
 
 })
-
-Rebar.messenger.useMessenger().commands.register({
-    name: '/set',
-    desc: '设置你的任意值 [type] [value]',
-    callback: async (player: alt.Player, type: string, value: string) => {
-        const value1 = Number(value);
-        if (type === 'food') {
-            useApi().set(player, 'food', value1);
-        }
-        if (type === 'water') {
-            useApi().set(player, 'water', value1);
-        }
-        if (type === 'shit') {
-            useApi().set(player, 'shit', value1);
-        }
-        if (type === 'health') {
-            player.health = value1;
-        }
-    },
-});
-
-Rebar.messenger.useMessenger().commands.register({
-    name: '/car',
-    desc: '整辆车开开 [carname]',
-    callback: async (player: alt.Player, carname: string) => {
-        const newcar = new alt.Vehicle(carname, player.pos.x, player.pos.y, player.pos.z, 0, 0, 0);
-        if (!newcar) {
-            return;
-        }
-        player.setIntoVehicle(newcar, 1);
-    },
-});
 
 
 /**
@@ -180,7 +147,7 @@ function givecharacterdefaultdata(player: alt.Player) {
     doc.set('shit', 0);
 }
 // 玩家创建角色时触发
-const charSelectApi = api.get('character-creator-api');
+const charSelectApi = await api.getAsync('character-creator-api');
 charSelectApi.onCreate(givecharacterdefaultdata);
 
 

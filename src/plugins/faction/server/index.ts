@@ -108,7 +108,7 @@ function giveCharacterDefaultData(player: alt.Player) {
 
 // 玩家创建角色时触发
 const api = Rebar.useApi();
-const charSelectApi = api.get('character-creator-api');
+const charSelectApi = await api.getAsync('character-creator-api');
 charSelectApi.onCreate(giveCharacterDefaultData);
 
 async function notifyPlayer(player: alt.Player, title: string, subTitle: string, message: string) {

@@ -65,7 +65,7 @@ async function giveCharacterDefaultData(player: alt.Player) {
 }
 
 // 玩家创建角色时触发
-const charSelectApi = api.get('character-creator-api');
+const charSelectApi = await api.getAsync('character-creator-api');
 charSelectApi.onCreate(giveCharacterDefaultData);
 
 
@@ -413,14 +413,4 @@ atm.forEach((atm, index) => {
 
 
 
-
-Rebar.messenger.useMessenger().commands.register({
-    name: '/testbank',
-    desc: '测试一下金额',
-    callback: async (player: alt.Player) => {
-       useApi().add({player}, 'bank', 1000);
-       useApi().add({player}, 'cash', 1000);
-       useApi().add({player}, 'points', 1000);
-    },
-});
 

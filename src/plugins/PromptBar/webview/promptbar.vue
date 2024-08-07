@@ -27,8 +27,8 @@ events.on('hidepromptbar', () => {
 <style scoped>
 .prompt-bar {
   position: fixed;
-  bottom: 30vh;
-  right: 30vw;
+  bottom: 33vh;
+  right: 33vw;
   background: rgba(255, 255, 255, 0.1); /* 更亮的半透明白色背景 */
   border: 1px solid rgba(255, 255, 255, 0.3); /* 半透明白色边框 */
   border-radius: 8px; /* 圆角 */

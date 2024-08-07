@@ -56,7 +56,6 @@ alt.on('weaponDamage', (target: alt.Entity, weaponHash: number, damage: number, 
 });
 */
 
-alt.Player.local.setMeta('scriptid',alt.Player.local.scriptID);
 
 
 /*

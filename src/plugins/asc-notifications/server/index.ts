@@ -16,7 +16,7 @@ async function init() {
     // 等待 'character-creator-api' 准备好，最长等待 30 秒
     await alt.Utils.waitFor(() => api.isReady('character-creator-api'), 30000);
 
-    const charSelectApi = api.get('character-creator-api');
+    const charSelectApi = await api.getAsync('character-creator-api');
 
     // 注册角色创建事件的处理程序
     charSelectApi.onCreate(handleCharacterCreated);

@@ -24,6 +24,5 @@ serverConfig.set('disablePistolWhip', true);
 serverConfig.set('disableVehicleEngineAutoStart', true);
 serverConfig.set('disableVehicleEngineAutoStop', true);
 serverConfig.set('disableVehicleSeatSwap', true);
-
-
+//serverConfig.set('disableWeaponRadial', true);
 

@@ -15,9 +15,6 @@ useWebview().show('hud', 'overlay');
 
 
 
-
-
-
 const view = useWebview();
 
 function update() {

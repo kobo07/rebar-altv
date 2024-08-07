@@ -5,12 +5,11 @@
     <div class="bar">
       <div class="fill" :style="{ width: value + '%', background: color }"></div>
     </div>
-   <!--  <span  class="value">{{ value }}%</span> -->
   </div>
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue';
+import { defineProps, computed } from 'vue';
 
 const props = defineProps<{
   label: string;
@@ -19,13 +18,7 @@ const props = defineProps<{
   icon: string;
 }>();
 
-
-
-
-
 </script>
-
-
 
 <style scoped>
 .status-bar {
@@ -40,9 +33,13 @@ const props = defineProps<{
   margin-left: -0.4vw;
   font-size: 1.5vw;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+
 }
 
+
+
+
+/* 保留已有的CSS */
 .fa-heart {
   color: red;
   position: relative;
@@ -51,7 +48,7 @@ const props = defineProps<{
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-  animation: heartbeat 2.5s infinite;
+  animation: pulse 2s infinite;
 }
 
 .fa-heart-broken {
@@ -74,7 +71,8 @@ const props = defineProps<{
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 5px rgba(128, 128, 128, 0.5);
 }
-.fa-walking{
+
+.fa-walking {
   color: rgb(0, 255, 8);
   position: relative;
   background: linear-gradient(135deg, #4CAF50 0%, #8BC34A 50%, #4CAF50 100%);
@@ -84,7 +82,7 @@ const props = defineProps<{
   text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
 }
 
-.fa-running{
+.fa-running {
   color: rgb(0, 255, 0);
   position: relative;
   background: linear-gradient(135deg, #76FF03 0%, #64DD17 50%, #76FF03 100%);
@@ -95,7 +93,7 @@ const props = defineProps<{
   animation: walk 1s infinite linear;
 }
 
-.fa-swimmer{
+.fa-swimmer {
   color: rgb(0, 255, 255);
   position: relative;
   background: linear-gradient(135deg, #00BCD4 0%, #00ACC1 50%, #00BCD4 100%);
@@ -136,7 +134,7 @@ const props = defineProps<{
   text-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
 }
 
-.fa-poop{
+.fa-poop {
   color: rgb(129, 86, 0);
   position: relative;
   background: linear-gradient(135deg, #D2691E 0%, #8B4513 50%, #D2691E 100%);
@@ -146,7 +144,7 @@ const props = defineProps<{
   text-shadow: 0 0 5px rgba(129, 86, 0, 0.5);
 }
 
-.fa-poo{
+.fa-poo {
   color: rgb(69, 46, 0);
   position: relative;
   background: linear-gradient(135deg, #8B4513 0%, #D2691E 50%, #8B4513 100%);
@@ -157,14 +155,17 @@ const props = defineProps<{
 }
 
 
-@keyframes heartbeat {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
+.fa-wheelchair {
+  color: rgb(255, 255, 0);
+  position: relative;
+  background: linear-gradient(135deg, #FFD700 0%, #FFFF00 50%, #FFD700 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
 }
+
+
 
 @keyframes pulse {
   0%, 100% {
@@ -176,7 +177,6 @@ const props = defineProps<{
     opacity: 0.7;
   }
 }
-
 
 @keyframes walk {
   0%, 100% {
@@ -190,25 +190,20 @@ const props = defineProps<{
   }
 }
 
-
-
 @keyframes swim {
-      0%, 100% {
-        transform:  translateY(0);
-      }
-      25% {
-        transform: translateY(0.1vh);
-      }
-      50% {
-        transform:translateY(0.17vh);
-      }
-      75% {
-        transform:  translateY(0.1vh);
-      }
-    }
-
-
-
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(0.1vh);
+  }
+  50% {
+    transform: translateY(0.17vh);
+  }
+  75% {
+    transform: translateY(0.1vh);
+  }
+}
 
 .label {
   width: 4vw;
